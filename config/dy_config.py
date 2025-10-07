@@ -20,6 +20,7 @@ DY_SPECIFIED_ID_LIST = [
 
 # 指定DY用户ID列表
 DY_CREATOR_ID_LIST = [
-    "MS4wLjABAAAATJPY7LAlaa5X-c8uNdWkvz0jUGgpw4eeXIwu_8BhvqE",
+    "MS4wLjABAAAAt7vlXentBGNYHVaHbt4SSNIh9N6UDG1FiV5lqIDnpXm4VgDvp5o3BftDZb9qK3gf",
+    "MS4wLjABAAAA750e6gwz0yOPswZlhKxyMZU92ZIUR3d4IiAZYoZXW7c",
     # ........................
 ]

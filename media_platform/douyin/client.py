@@ -309,6 +309,9 @@ class DouYinClient(AbstractApiClient):
             if callback:
                 await callback(aweme_list)
             result.extend(aweme_list)
+            if len(result) > 30:
+                utils.logger.info(f"[DouYinClient.get_all_user_aweme_posts] get sec_user_id:{sec_user_id} break for up limit")
+                break
         return result
 
     async def get_aweme_media(self, url: str) -> Union[bytes, None]:
