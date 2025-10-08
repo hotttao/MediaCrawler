@@ -46,8 +46,18 @@ def fetch_douyin_data(target_date):
 
     # 将目标日期转为微秒时间戳范围（仅用于 SQL 查询）
     target_datetime = pd.to_datetime(target_date)
-    start_us = int(target_datetime.timestamp() * 1_000)  # 00:00:00.000000
-    end_us = start_us + 24 * 60 * 60 * 1_000 - 1          # 23:59:59.999999
+    # 2. 构造上海时区的 datetime（自动处理夏令时等问题）
+    tz = 'Asia/Shanghai'
+    
+    # 创建当天 00:00:00 上海时间
+    start_dt = pd.to_datetime(target_datetime).tz_localize(tz)
+    
+    # 创建第二天 00:00:00 上海时间，然后减 1 微秒 得到当天最后一刻
+    end_dt = start_dt + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+    
+    # 3. 转为毫秒级时间戳（JavaScript 可用）
+    start_us = int(start_dt.timestamp() * 1_000)
+    end_us = int(end_dt.timestamp() * 1_000)
 
     query = f"""
     SELECT 
