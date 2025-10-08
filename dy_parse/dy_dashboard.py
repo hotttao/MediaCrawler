@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 PWD = os.path.realpath(os.path.dirname(__file__))
 
 def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2: pd.DataFrame, output_path: str = "report"):
+    """
+    完整 HTML 可视化报表
+    """
     target_dt = datetime.strptime(target_date, "%Y-%m-%d")
     last5_date = (target_dt - timedelta(days=5)).strftime("%Y-%m-%d")
 
@@ -59,8 +62,6 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
     <select id="nicknameFilter" multiple>
       {''.join([f'<option value="{n}">{n}</option>' for n in nickname_list])}
     </select>
-
-    <button id="applyFilter" style="margin-left:20px;">应用过滤</button>
   </div>
 
   <div id="chart1"></div>
@@ -131,21 +132,19 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
 
       const filteredData = df2.filter(d => d[xKey] >= minVal && validTitles.has(d.elastic_title));
 
-      // 数据拆分
-      const data1 = filteredData.filter(d => d[xKey] <= 100);
-      const data2 = filteredData.filter(d => d[xKey] > 100);
+      // 拆分图表
+      const data1 = filteredData.filter(d => d[xKey] <= 80);
+      const data2 = filteredData.filter(d => d[xKey] > 80);
 
-      // 通用配置函数
-      function getOption(data) {{
+      function getOption(data, xStart) {{
         return {{
           tooltip: {{ trigger: 'item', formatter: p => `${{p.data[2]}}<br/>${{xKey}}: ${{p.data[0]}}<br/>pub_count: ${{p.data[1]}}` }},
           xAxis: {{
             name: xKey,
             type: 'value',
+            min: xStart,
             interval: 10,
-            axisLabel: {{
-              formatter: v => v > 200 ? v + '+' : v
-            }}
+            axisLabel: {{ formatter: v => v > 200 ? v + '+' : v }}
           }},
           yAxis: {{ name: 'pub_count', type: 'value' }},
           series: [{{
@@ -159,10 +158,10 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
         }};
       }}
 
-      chart1.setOption(getOption(data1));
-      chart2.setOption(getOption(data2));
+      chart1.setOption(getOption(data1, minVal));
+      chart2.setOption(getOption(data2, 70));
 
-      // 同步更新表格
+      // 更新表格
       const filteredDf1 = df1.filter(d =>
         (!dateVal || new Date(d.create_time) >= new Date(dateVal)) &&
         (selectedNicknames.length === 0 || selectedNicknames.includes(d.nickname))
@@ -172,20 +171,15 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
 
     renderCharts();
 
-    document.getElementById('xAxisSelector').addEventListener('change', e => {{
-      currentXKey = e.target.value;
-      renderCharts();
-    }});
-    document.getElementById('applyFilter').addEventListener('click', renderCharts);
-    document.getElementById('btnLast5').addEventListener('click', () => {{
-      document.getElementById('dateFilter').value = last5Date;
-      renderCharts();
-    }});
-    document.getElementById('btnClearDate').addEventListener('click', () => {{
-      document.getElementById('dateFilter').value = '';
-      renderCharts();
-    }});
+    // ===== 自动生效事件 =====
+    $('#xAxisSelector').on('change', e => {{ currentXKey = e.target.value; renderCharts(); }});
+    $('#minValue').on('input', renderCharts);
+    $('#dateFilter').on('change', renderCharts);
+    $('#nicknameFilter').on('change', renderCharts);
+    $('#btnLast5').on('click', () => {{ document.getElementById('dateFilter').value = last5Date; renderCharts(); }});
+    $('#btnClearDate').on('click', () => {{ document.getElementById('dateFilter').value = ''; renderCharts(); }});
 
+    // 点击点展示 df1 明细
     function chartClickHandler(params) {{
       const elasticTitle = params.data[2];
       const filtered = df1.filter(d => d.elastic_title === elasticTitle);
@@ -210,7 +204,8 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
 
 def main():
     from dy_incr import cal_day_incr
-    target_date = "2025-10-08"  # 可改为传参或 datetime.today().strftime('%Y-%m-%d')
+    # target_date = "2025-10-08"
+    target_date = datetime.today().strftime('%Y-%m-%d')
     result1, result2 = cal_day_incr(target_date)
     generate_html_report(target_date, result1, result2)
 
