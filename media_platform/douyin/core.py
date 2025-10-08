@@ -227,10 +227,22 @@ class DouYinCrawler(AbstractCrawler):
                 await douyin_store.save_creator(user_id, creator=creator_info)
 
             # Get all video information of the creator
-            all_video_list = await self.dy_client.get_all_user_aweme_posts(sec_user_id=user_id, callback=self.fetch_creator_video_detail)
+            # all_video_list = await self.dy_client.get_all_user_aweme_posts(sec_user_id=user_id, callback=self.fetch_creator_video_detail)
+            # video_ids = [video_item.get("aweme_id") for video_item in all_video_list]
+            # await self.batch_get_note_comments(video_ids)
 
-            video_ids = [video_item.get("aweme_id") for video_item in all_video_list]
-            await self.batch_get_note_comments(video_ids)
+            # 重写 video 详情的获取接口，不需要请求 aweme 详情接口
+            await self.dy_client.get_all_user_aweme_posts(sec_user_id=user_id, callback=self.fetch_creator_video_summary)
+
+    async def fetch_creator_video_summary(self, video_list: List[Dict]):
+        """
+        从 video_list 中提取视频的统计信息
+        """
+        for i in video_list:
+            if not i:
+                continue
+            await douyin_store.update_douyin_aweme_summary(aweme_item=i)
+
 
     async def fetch_creator_video_detail(self, video_list: List[Dict]):
         """

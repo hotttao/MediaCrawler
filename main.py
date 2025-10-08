@@ -8,6 +8,8 @@
 # 详细许可条款请参阅项目根目录下的LICENSE文件。
 # 使用本代码即表示您同意遵守上述原则和LICENSE中的所有条款。
 
+from dotenv import load_dotenv
+load_dotenv()
 
 import asyncio
 import sys
@@ -24,6 +26,8 @@ from media_platform.tieba import TieBaCrawler
 from media_platform.weibo import WeiboCrawler
 from media_platform.xhs import XiaoHongShuCrawler
 from media_platform.zhihu import ZhihuCrawler
+
+
 
 
 class CrawlerFactory:

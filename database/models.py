@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, Text, String, BigInteger
+from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -119,6 +120,60 @@ class DouyinAweme(Base):
     music_download_url = Column(Text)
     note_download_url = Column(Text)
     source_keyword = Column(Text, default='')
+
+
+class DouyinAwemeSummary(Base):
+    """
+    抖音视频信息及关联商品信息模型。
+    对应 JSON 数据结构，主键为 aweme_id 和 update_ts。
+    """
+    __tablename__ = 'douyin_aweme_summary'
+
+    # --- 主键字段 ---
+    aweme_id = Column(BigInteger, nullable=False, comment="视频ID")
+    update_ts = Column(BigInteger, nullable=False, comment="更新时间戳（毫秒）")
+
+    # --- 用户信息 ---
+    sec_uid = Column(String(255), nullable=True, comment="用户加密ID")
+    nickname = Column(Text, nullable=True, comment="用户昵称")
+    avatar = Column(Text, nullable=True, comment="用户头像URL")
+
+    # --- 视频信息 ---
+    aweme_type = Column(String(50), nullable=True, comment="视频类型")
+    title = Column(Text, nullable=True, comment="视频标题")
+    desc = Column(Text, nullable=True, comment="视频描述")
+    create_time = Column(BigInteger, nullable=True, comment="创建时间（秒级时间戳）")
+
+    # --- 统计信息 ---
+    recommend_count = Column(Integer, nullable=False, default=0, comment="推荐数")
+    comment_count = Column(Integer, nullable=False, default=0, comment="评论数")
+    digg_count = Column(Integer, nullable=False, default=0, comment="点赞数")
+    admire_count = Column(Integer, nullable=False, default=0, comment="喜欢数")
+    play_count = Column(Integer, nullable=False, default=0, comment="播放数")
+    share_count = Column(Integer, nullable=False, default=0, comment="分享数")
+    collect_count = Column(Integer, nullable=False, default=0, comment="收藏数")
+
+    # --- URL 信息 ---
+    aweme_url = Column(Text, nullable=True, comment="视频页面URL")
+    cover_url = Column(Text, nullable=True, comment="封面图URL")
+    video_download_url = Column(Text, nullable=True, comment="视频下载URL")
+    music_download_url = Column(Text, nullable=True, comment="音乐下载URL")
+    note_download_url = Column(Text, nullable=True, comment="图文下载URL")
+
+    # --- 商品信息 ---
+    promotion_id = Column(String(255), nullable=True, comment="推广ID")
+    product_id = Column(String(255), nullable=True, comment="商品ID")
+    product_title = Column(Text, nullable=True, comment="商品标题")
+    price = Column(Integer, nullable=False, default=0, comment="商品价格（单位：分）")
+    sales = Column(Integer, nullable=False, default=0, comment="销量")
+    elastic_title = Column(Text, nullable=True, comment="商品弹性标题")
+
+    # --- 定义联合主键 ---
+    __table_args__ = (
+        PrimaryKeyConstraint('aweme_id', 'update_ts'),
+        # 可以在这里添加其他索引或约束
+        # 例如: Index('idx_create_time', 'create_time'),
+    )
 
 class DouyinAwemeComment(Base):
     __tablename__ = 'douyin_aweme_comment'

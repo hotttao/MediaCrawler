@@ -175,6 +175,68 @@ async def update_douyin_aweme(aweme_item: Dict):
     await DouyinStoreFactory.create_store().store_content(content_item=save_content_item)
 
 
+async def update_douyin_aweme_summary(aweme_item: Dict):
+    result = {}
+    author = aweme_item.get('author', {})
+    result['sec_uid'] = author.get('sec_uid', '')
+    result['nickname'] = author.get('nickname', '')
+
+    aweme_id = result['aweme_id'] = aweme_item.get('aweme_id', '')
+
+    result['aweme_type'] = str(aweme_item.get("aweme_type"))
+    title = result['title'] = aweme_item.get('desc', '')
+    result['avatar'] = author.get("avatar_thumb", {}).get("url_list", [""])[0]
+
+    create_timestamp = aweme_item.get('create_time', 0)
+    result['create_time'] = create_timestamp
+
+    stats = aweme_item.get('statistics', {})
+    result['recommend_count'] = stats.get('recommend_count', 0)
+    result['comment_count'] = stats.get('comment_count', 0)
+    result['digg_count'] = stats.get('digg_count', 0)
+    result['admire_count'] = stats.get('admire_count', 0)
+    result['play_count'] = stats.get('play_count', 0)
+    result['share_count'] = stats.get('share_count', 0)
+    result['collect_count'] = stats.get('collect_count', 0)
+    result['update_ts'] = utils.get_current_timestamp()
+    aweme_url = {
+        "aweme_url": f"https://www.douyin.com/video/{aweme_id}",
+        "cover_url": _extract_content_cover_url(aweme_item),
+        "video_download_url": _extract_video_download_url(aweme_item),
+        "music_download_url": _extract_music_download_url(aweme_item),
+        "note_download_url": ",".join(_extract_note_image_list(aweme_item)),
+    }
+    result.update(aweme_url)
+
+    anchor_info = aweme_item.get('anchor_info', {})
+    extra_str = anchor_info.get('extra', '')
+    
+    # 使用独立的 product 字典收集商品信息
+    product = {}
+    
+    if extra_str:
+        try:
+            extra_list = json.loads(extra_str)
+            if extra_list and isinstance(extra_list, list):
+                first_product = extra_list[0]
+                product['promotion_id'] = first_product.get("promotion_id", "")
+                product['product_id'] = first_product.get("product_id", "")
+                product['product_title'] = first_product.get("title", "")  # 避免与视频 title 冲突
+                product['price'] = first_product.get("price", 0)
+                product['sales'] = first_product.get("sales", 0)
+                product['elastic_title'] = first_product.get("elastic_title", "")
+        except json.JSONDecodeError:
+            # 如果解析失败，product 保持为空字典
+            pass
+    
+    # 将 product 字典中的所有键值对更新到主 result 字典中
+    # 这样保证了最终结构仍然是扁平化的
+    result.update(product)
+
+    utils.logger.info(f"[store.douyin.update_douyin_aweme] douyin aweme id:{aweme_id}, title:{title}")
+    await DouyinStoreFactory.create_store().store_content_summary(content_summary_item=result)
+
+
 async def batch_update_dy_aweme_comments(aweme_id: str, comments: List[Dict]):
     if not comments:
         return

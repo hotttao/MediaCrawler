@@ -24,7 +24,7 @@ from sqlalchemy import select
 import config
 from base.base_crawler import AbstractStore
 from database.db_session import get_session
-from database.models import DouyinAweme, DouyinAwemeComment, DyCreator
+from database.models import DouyinAweme, DouyinAwemeComment, DyCreator, DouyinAwemeSummary
 from tools import utils, words
 from tools.async_file_writer import AsyncFileWriter
 from var import crawler_type_var
@@ -81,6 +81,14 @@ class DouyinCsvStoreImplement(AbstractStore):
 
 
 class DouyinDbStoreImplement(AbstractStore):
+    async def store_content_summary(self, content_summary_item: Dict):
+        async with get_session() as session:
+            
+            new_content = DouyinAwemeSummary(**content_summary_item)
+            session.add(new_content)
+            await session.commit()
+
+    
     async def store_content(self, content_item: Dict):
         """
         Douyin content DB storage implementation

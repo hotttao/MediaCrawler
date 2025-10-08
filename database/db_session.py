@@ -37,7 +37,7 @@ def get_async_engine(db_type: str = None):
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
 
-    engine = create_async_engine(db_url, echo=False)
+    engine = create_async_engine(db_url, echo=False, pool_pre_ping=True, pool_recycle=3600)
     _engines[db_type] = engine
     return engine
 

@@ -306,11 +306,13 @@ class DouYinClient(AbstractApiClient):
             max_cursor = aweme_post_res.get("max_cursor")
             aweme_list = aweme_post_res.get("aweme_list") if aweme_post_res.get("aweme_list") else []
             utils.logger.info(f"[DouYinClient.get_all_user_aweme_posts] get sec_user_id:{sec_user_id} video len : {len(aweme_list)}")
+
             if callback:
                 await callback(aweme_list)
             result.extend(aweme_list)
-            if len(result) > 30:
+            if len(result) >= 36:
                 utils.logger.info(f"[DouYinClient.get_all_user_aweme_posts] get sec_user_id:{sec_user_id} break for up limit")
+                result = result[:36]
                 break
         return result
 
