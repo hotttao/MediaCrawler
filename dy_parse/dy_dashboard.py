@@ -144,7 +144,6 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
             type: 'value',
             min: xStart,
             interval: 10,
-            axisLabel: {{ formatter: v => v > 200 ? v + '+' : v }}
           }},
           yAxis: {{ name: 'pub_count', type: 'value' }},
           series: [{{
