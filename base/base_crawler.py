@@ -75,6 +75,8 @@ class AbstractLogin(ABC):
 
 
 class AbstractStore(ABC):
+    async def store_content_summary(self, content_summary_item: Dict):
+        pass
 
     @abstractmethod
     async def store_content(self, content_item: Dict):
