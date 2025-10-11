@@ -92,8 +92,8 @@ def process_douyin_data(df, target_date):
     target_data_date = target_datetime.date()
 
     # 确保时间字段为 datetime 类型
-    df['update_ts'] = pd.to_datetime(df['update_ts'], unit='ms', errors='coerce')
-    df['create_time'] = pd.to_datetime(df['create_time'], unit='s', errors='coerce').dt.date
+    df['update_ts'] = pd.to_datetime(df['update_ts'], unit='ms', errors='coerce').dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
+    df['create_time'] = pd.to_datetime(df['create_time'], unit='s', errors='coerce').dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
     # 筛选目标日期的数据
     daily_data = df[df['update_ts'].dt.date == target_data_date].copy()
 
