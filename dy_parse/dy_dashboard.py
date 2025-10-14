@@ -1,4 +1,5 @@
 import os
+import argparse
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -201,11 +202,39 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
     print(f"✅ 报表已生成: {output_file}")
 
 
+# 创建参数解析器
+parser = argparse.ArgumentParser(description="计算增量数据并生成报告")
+
+parser.add_argument(
+    '-s', '--start_date',
+    type=str,
+    required=False,  # 强制用户必须提供 start_date
+    default="",
+    help='起始日期，格式: YYYY-MM-DD (必须提供)'
+)
+
+parser.add_argument(
+    '-t', '--target_date',
+    type=str,
+    default=datetime.today().strftime('%Y-%m-%d'),  # 默认为今天
+    help='目标日期，格式: YYYY-MM-DD，默认为今天'
+)
+
+parser.add_argument(
+    '-d', '--days',
+    type=int,
+    default=0,
+    help='往前推多少天，默认为 0（即只分析目标日期当天）'
+)
+
 def main():
     from dy_incr import cal_day_incr
     # target_date = "2025-10-08"
-    target_date = datetime.today().strftime('%Y-%m-%d')
-    result1, result2 = cal_day_incr(target_date)
+    args = parser.parse_args()
+    days = args.days  # 必须存在
+    target_date = args.target_date  # 如果未提供，则为默认值（今天）
+    # target_date = datetime.today().strftime('%Y-%m-%d')
+    result1, result2 = cal_day_incr(target_date, days)
     generate_html_report(target_date, result1, result2)
 
 

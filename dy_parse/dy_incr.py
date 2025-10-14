@@ -32,13 +32,13 @@ def get_mysql_engine():
     engine = create_engine(database_url, echo=False)  # 可设 echo=True 查看 SQL
     return engine
 
-def fetch_douyin_data(target_date):
+def fetch_douyin_data(target_date, days=0):
     """
     从数据库读取指定日期的 douyin_aweme_summary 数据
 
     Parameters:
         target_date (str): 格式 '2025-10-08'
-
+        days (int): 
     Returns:
         pd.DataFrame
     """
@@ -54,7 +54,8 @@ def fetch_douyin_data(target_date):
     
     # 创建第二天 00:00:00 上海时间，然后减 1 微秒 得到当天最后一刻
     end_dt = start_dt + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
-    
+    if days > 0:
+        start_dt = start_dt - pd.Timedelta(days=days)
     # 3. 转为毫秒级时间戳（JavaScript 可用）
     start_us = int(start_dt.timestamp() * 1_000)
     end_us = int(end_dt.timestamp() * 1_000)
@@ -95,8 +96,8 @@ def process_douyin_data(df, target_date):
     df['update_ts'] = pd.to_datetime(df['update_ts'], unit='ms', errors='coerce').dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
     df['create_time'] = pd.to_datetime(df['create_time'], unit='s', errors='coerce').dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
     # 筛选目标日期的数据
-    daily_data = df[df['update_ts'].dt.date == target_data_date].copy()
-
+    daily_data = df.copy()
+    # daily_data = df[df['update_ts'].dt.date == target_data_date].copy()
     if daily_data.empty:
         print(f"⚠️ No data found for {target_date}")
         return pd.DataFrame(), pd.DataFrame()
@@ -179,10 +180,10 @@ def process_douyin_data(df, target_date):
     return result_df1, result_df2
 
 
-def cal_day_incr(target_date):
+def cal_day_incr(target_date, days):
     # 1. 从数据库读取数据
-    df = fetch_douyin_data(target_date)
-
+    df = fetch_douyin_data(target_date, days)
+    
     # 2. 处理数据
     result1, result2 = process_douyin_data(df, target_date)
     return result1, result2

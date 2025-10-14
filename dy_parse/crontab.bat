@@ -34,11 +34,10 @@ echo Creating new task (interactive mode)...
 schtasks /create /tn "%TASK_NAME%" ^
     /tr "%SCRIPT_PATH%" ^
     /sc daily ^
-    /st 19:23 ^
+    /st 00:30 ^
     /f ^
     /ru %USERDOMAIN%\%USERNAME% ^
-    /rl HIGHEST ^
-    /it
+    /rl HIGHEST 
 
 if %errorlevel% equ 0 (
     echo SUCCESS: Task created successfully.
