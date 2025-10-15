@@ -8,7 +8,7 @@ def get_chat_msg(who):
     # 获取当前聊天窗口消息
     msgs = wx.GetAllMessage()
     collect = []
-    chat_info = {"who": who}
+    chat_info = {"nickname": who}
     for msg in msgs:
         if msg.type != "text":
             continue

@@ -33,7 +33,8 @@ z_白杨树卷纸投流品: 新款抽纸，投全域前期卡2左右跑
 """
 
 CHAT_INFO = {
-    'who': 'z_白杨树卷纸投流品', 
+    'nickname': 'z_白杨树卷纸投流品', 
     'last_msg': '新款抽纸，投全域前 期卡2左右跑\n\n【加量装】20包整箱大包抽纸五层加厚可湿水抽取式面巾纸家用加量装\n【佣金率】：2%\n【售价】：19.8\n【商品链接】https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3774712764564635930&ins_activity_param=RfCqD--dr_g&pick_source=v.5rieJ2&origin_type=pc_buyin_group', 
-    'last_id': '421314344570'
+    'last_id': '421314344570',
+    'content': CHAT_EXAMPLE
 }
