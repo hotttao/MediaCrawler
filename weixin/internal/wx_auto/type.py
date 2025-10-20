@@ -1,8 +1,14 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
+class WxAccount(BaseModel):
+    wx_id: str # 微信号
+    nickname: str # 昵称
+    remark: str # 备注
+
+
 class ChatMsg(BaseModel):
-    nickname: str # 消息来自谁
+    account: WxAccount # 消息来自谁
     msg: str # 消息的内容
     type: str # 消息的类型
     is_self: bool # 是否是自己发送的消息
@@ -14,10 +20,12 @@ class ChatMsg(BaseModel):
         if self.is_self:
             return f"我: {self.content}"
         else:
-            return f"{self.nickname}: {self.content}"
+            nickname = self.account.remark or self.account.nickname
+            return f"{nickname}: {self.content}"
+
 
 class ChatInfo(BaseModel):
-    nickname: str
+    account: WxAccount
     content: List[ChatMsg]
     last_id: int
     self_last_msg: Optional[str] = None
@@ -31,8 +39,3 @@ class FriendReq(BaseModel):
     nickname: str
     req_msg: str
 
-
-class Friend(BaseModel):
-    wx_id: str # 微信号
-    nickname: str # 昵称
-    remark: str # 备注

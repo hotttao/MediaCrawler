@@ -4,7 +4,7 @@ from weixin.internal.wx_auto.type import (
     ChatMsg,
     ChatInfo,
     FriendReq,
-    Friend
+    WxAccount
 )
 
 
@@ -12,14 +12,14 @@ class WxAuto:
     def __init__(self, wx_chat: WeChat):
         self.wx = wx_chat
 
-    def get_chat_msg(self, nickname) -> ChatInfo:
+    def get_chat_msg(self, account: WxAccount) -> ChatInfo:
         wx = self.wx
-        wx.ChatWith(who=nickname)
+        wx.ChatWith(who=account.wx_id)
         # 获取当前聊天窗口消息
         msgs = wx.GetAllMessage()
         chat_msgs = []
         chat_info = ChatInfo(
-            nickname=nickname,
+            account=account,
             content=[],
             last_id=-1,
             self_last_id=-1,
@@ -27,13 +27,12 @@ class WxAuto:
             friend_last_id=-1,
             friend_last_msg=""
         )
-        
         for msg in msgs:
             if msg.attr not in ("self", "friend"):
                 continue
             is_self = msg.attr == "self"
             chat_msg = ChatMsg(
-                nickname="我" if is_self else nickname,
+                account=account,
                 type=msg.type,
                 msg=msg.content,
                 is_self=is_self
@@ -48,11 +47,17 @@ class WxAuto:
                 chat_info.friend_last_msg = msg.content
         return chat_info
     
-    def get_friends(self, prefix="z_", n=None):
+    def get_friends(self, prefix="z_", n=None) -> WxAccount:
         friends = self.wx.GetFriendDetails(n=n)
         collect = []
         for i in friends:
-            f = Friend(wx_id=i["微信号"], nickname=i["昵称"], remark=i["备注"])
+            print(i)
+            if "微信号" not in i:
+                continue
+            f = WxAccount(
+                wx_id=i["微信号"], 
+                nickname=i["昵称"], remark=i.get("备注", "")
+            )
             collect.append(f)
         return collect
 
@@ -68,3 +73,14 @@ class WxAuto:
                 )
             new_req.append(req)
         return new_req
+
+    def add_tag(self, wx_accounts: List[WxAccount], tags):
+        """
+        给微信账号添加 tag
+        """
+        res = []
+        for i in wx_accounts:
+            self.wx.ChatWith(who=i.wx_id)
+            r = self.wx.ManageFriend(tags=tags)
+            res.append(r)
+        return res
