@@ -1,14 +1,12 @@
 # models.py
 from sqlalchemy import (
-    create_engine, Column, Integer, String, Float, 
+    Column, Integer, Float, 
     Boolean, DateTime, func, 
-    UniqueConstraint, select, update,
+    UniqueConstraint,
     VARCHAR, Text
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-
-Base = declarative_base()
+from sqlalchemy.orm import Session
+from weixin.biz.db import Base
 
 
 class Chat(Base):

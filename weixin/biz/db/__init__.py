@@ -1,0 +1,1 @@
+from weixin.biz.db.mysql import Base

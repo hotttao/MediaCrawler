@@ -1,10 +1,9 @@
-# crud_example.py
-import dotenv
-dotenv.load_dotenv()
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-from weixin.model import Base, Chat, Product
 from contextlib import contextmanager
 
 # 数据库连接（使用 SQLite 示例）
@@ -12,6 +11,7 @@ from contextlib import contextmanager
 import os
 from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
+
 
 def create_mysql_engine():
     """
@@ -66,7 +66,7 @@ engine = create_mysql_engine()
 SessionLocal = sessionmaker(bind=engine)
 
 # 创建表
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 @contextmanager
@@ -80,3 +80,7 @@ def get_db():
         raise
     finally:
         db.close()
+
+
+def init(config):
+    pass

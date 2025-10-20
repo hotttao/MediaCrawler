@@ -1,0 +1,6 @@
+output_subdir: null
+run:
+  dir: .
+
+# defaults:
+#   - override job_logging: "${oc.env:ENVIRONMENT, 'base'}"

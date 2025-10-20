@@ -1,0 +1,8 @@
+database:
+  mysql:
+    host: ${oc.env:MYSQL_HOST,localhost}
+    port: ${oc.env:MYSQL_PORT,3306}
+    user: ${oc.env:MYSQL_USER,root}
+    password: ${oc.env:MYSQL_PASSWORD,secret}
+    database: ${oc.env:MYSQL_DB,myapp}
+    charset: utf8mb4

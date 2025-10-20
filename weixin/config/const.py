@@ -1,7 +1,10 @@
 import os
 
 PWD =  os.path.dirname(os.path.realpath(__file__))
-PATH_PRODUCT = os.path.join(PWD, "dy_product.xlsx")
+PATH_ROOT = os.path.dirname(PWD)
+PATH_DATA = os.path.join(PATH_ROOT, "data")
+PATH_CONFIG = os.path.join(PATH_ROOT, "config")
+
 
 CHAT_EXAMPLE = """,
 z_白杨树卷纸投流品: 【到手21大卷】6斤实惠家用卷纸干湿两用卫生间厕纸亲肤大卷加厚
