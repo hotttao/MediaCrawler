@@ -92,7 +92,7 @@ class ProductDB:
 def main():
     db = ProductDB()
 
-    who = "z_白杨树卷纸投流品"
+    who = "z_金纺"
     chat_info = get_chat_msg(who)
     # chat_info = CHAT_INFO
     if db.is_chat_cached(chat_info):
