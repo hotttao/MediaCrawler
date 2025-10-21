@@ -10,9 +10,16 @@ from weixin.config.schema import Config
 CONFIG = None
 
 def load_config():
+    global CONFIG
     with initialize(config_path="./", version_base="1.3"):
         # config is relative to a module
         cfg:dictConfig = compose(config_name="config.yaml", return_hydra_config=False)
     config_dict = OmegaConf.to_container(cfg, resolve=True)
     CONFIG = Config(**config_dict)
+    return CONFIG
+
+
+def get_config() -> Config:
+    if CONFIG is None:
+        load_config()
     return CONFIG

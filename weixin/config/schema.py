@@ -16,7 +16,7 @@ class MySQLConfig(BaseModel):
         # 对用户名和密码进行 URL 编码
         encoded_user = quote(self.user, safe='')
         encoded_password = quote(self.password, safe='')
-        return f"mysql://{encoded_user}:{encoded_password}@{self.host}:{self.port}/{self.database}?charset={self.charset}"
+        return f"mysql+pymysql://{encoded_user}:{encoded_password}@{self.host}:{self.port}/{self.database}?charset={self.charset}"
 
 
 class RedisConfig(BaseModel):

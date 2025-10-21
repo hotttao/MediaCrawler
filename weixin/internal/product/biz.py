@@ -1,30 +1,36 @@
-from weixin.internal.product.data import extract_product_info
+import pandas
+from weixin.internal.product.data import format_product_info
+from weixin.internal.product.data import ProductData
 
-class IProduct:
-    pass
 
 class ProductBiz:
-    def __init__(self, db: IProduct):
-        pass
-
-
-def main():
-    db = ProductDB()
-
-    who = "z_金纺"
-    chat_info = get_chat_msg(who)
-    # chat_info = CHAT_INFO
-    if db.is_chat_cached(chat_info):
-        print(f'{chat_info["nickname"]} 最近消息已处理')
-        return
-    chat_content = chat_info.pop("content")
-    # chat_content = CHAT_EXAMPLE
-    product_info = extract_product_info(chat_content)
-    df_product = format_product_info(product_info)
+    def __init__(self, data: ProductData):
+        self.data = data
+        self.cache = self.load_cache()
     
-    df_new = db.filter_exists_product(chat_info, df_product)
-    db.save(df_new, chat_info)
-    
+    @classmethod
+    def new(cls, engine):
+        data = ProductData(engine)
+        return cls(data)
 
-if __name__ == "__main__":
-    main()
+    def load_cache(self):
+        df_product = self.data.load_all_product()    
+        cache = {}
+        for nickname, df_product in df_product.groupby(by="nickname"):
+            if nickname not in cache:
+                cache[nickname] = {}
+            cache[nickname]["products"] = set(df_product["product_url"].tolist())
+        return cache
+    
+    def filter_exists_product(self, nickname, df_product):
+        df_product["nickname"] = nickname
+        cache = self.cache.get(nickname, {})
+        exists_product = cache.get("products", {})
+        df_new = df_product[-df_product["product_url"].isin(exists_product)]
+        return df_new
+
+    def save_from_llm(self, session, nickname, products):
+        products = format_product_info(products)
+        df_product = pandas.DataFrame(products)
+        df_new = self.filter_exists_product(nickname, df_product)
+        self.data.save(session, df_new)   

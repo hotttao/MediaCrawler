@@ -310,9 +310,9 @@ class DouYinClient(AbstractApiClient):
             if callback:
                 await callback(aweme_list)
             result.extend(aweme_list)
-            if len(result) >= 36:
+            if len(result) >= 36 * 3:
                 utils.logger.info(f"[DouYinClient.get_all_user_aweme_posts] get sec_user_id:{sec_user_id} break for up limit")
-                result = result[:36]
+                result = result[:36 * 3]
                 break
         return result
 

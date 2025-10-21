@@ -10,9 +10,3 @@ llm = Tongyi(
     temperature=0.7,
     # dashscope_api_key="your-api-key"  # 也可以在这里传入
 )
-
-def extract_product_info(wx_msg):
-    prompt = PromptTemplate.from_template(template)
-    prompt = prompt.format(wx_msg=wx_msg)
-    response = llm.invoke(prompt)
-    return response

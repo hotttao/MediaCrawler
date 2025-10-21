@@ -3,7 +3,7 @@ mysql:
   port: ${oc.env:MYSQL_PORT,3306}
   user: ${oc.env:MYSQL_USER,root}
   password: ${oc.env:MYSQL_DB_PWD,secret}
-  database: ${oc.env:MYSQL_DB,myapp}
+  database: ${oc.env:MYSQL_DB_NAME,myapp}
   charset: utf8mb4
 
 # redis:

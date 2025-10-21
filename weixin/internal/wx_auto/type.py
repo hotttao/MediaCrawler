@@ -1,3 +1,4 @@
+import io
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -18,10 +19,10 @@ class ChatMsg(BaseModel):
         if self.type != "text":
                 return ""
         if self.is_self:
-            return f"我: {self.content}"
+            return f"我: {self.msg}"
         else:
             nickname = self.account.remark or self.account.nickname
-            return f"{nickname}: {self.content}"
+            return f"{nickname}: {self.msg}"
 
 
 class ChatInfo(BaseModel):
@@ -33,6 +34,17 @@ class ChatInfo(BaseModel):
     friend_last_msg: Optional[str] = None
     friend_last_id: Optional[int] = None
 
+    @property
+    def last_msg(self):
+        return self.friend_last_msg \
+            if self.last_id == self.friend_last_id else self.self_last_msg
+
+    @property
+    def llm_content(self):
+        buffer = io.StringIO()
+        for s in self.content:
+            buffer.write(s.to_text())
+        return buffer.getvalue()
 
 class FriendReq(BaseModel):
     wx_id: str

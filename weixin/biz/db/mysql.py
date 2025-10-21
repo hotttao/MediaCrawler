@@ -1,19 +1,15 @@
+import os
+
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
-
-# 数据库连接（使用 SQLite 示例）
-# database.py
-import os
-from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
+from weixin.config import get_config
 
+Base = declarative_base()
 
-def create_mysql_engine():
+def get_connect():
     """
     从环境变量中读取 MySQL 配置，创建并返回 SQLAlchemy engine。
     环境变量：
@@ -50,10 +46,13 @@ def create_mysql_engine():
         f"@{host}:{port}/{db_name}"
         f"?charset=utf8mb4&collation=utf8mb4_unicode_ci"
     )
+    return DATABASE_URL
 
+
+def create_mysql_engine(dsn):
     # 创建 engine
     engine = create_engine(
-        DATABASE_URL,
+        dsn,
         echo=False,           # 生产环境建议设为 False，或通过环境变量控制
         pool_pre_ping=True,   # 每次连接前检查有效性
         pool_recycle=3600,    # 避免 MySQL 的 wait_timeout 导致断连
@@ -62,7 +61,8 @@ def create_mysql_engine():
     )
     return engine
 
-engine = create_mysql_engine()
+config = get_config()
+engine = create_mysql_engine(config.database.mysql.dsn)
 SessionLocal = sessionmaker(bind=engine)
 
 # 创建表
