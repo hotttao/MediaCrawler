@@ -1,6 +1,6 @@
 import io
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Any
 
 class WxAccount(BaseModel):
     wx_id: str # 微信号
@@ -50,4 +50,5 @@ class FriendReq(BaseModel):
     wx_id: str
     nickname: str
     req_msg: str
+    wx_op: Any
 
