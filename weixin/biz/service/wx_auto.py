@@ -1,12 +1,16 @@
+import os
+import re
 import random
 import time
 from typing import List
+from weixin.config.const import PATH_CACHE
 from weixin.internal.wx_auto.type import WxAccount
 from weixin.internal.wx_auto.biz import WxAuto
 from weixin.internal.product.biz import ProductBiz
 from weixin.internal.chat.biz import ChatBiz
 from weixin.agent.node.merchant import extract_merchant_info
 from weixin.agent.node.role import extract_role
+from weixin.agent.node.wx_ad import extract_group_msg
 from weixin.biz.db.mysql import get_db
 
 
@@ -67,3 +71,15 @@ class WeixinAutoService:
     def add_tag(self, wx_accounts: List[WxAccount], tags):
         for i in wx_accounts:
             self.wx_auto.add_tag([i], tags)
+
+    def get_group_msg(self, group):
+        """
+        """
+        gs = self.wx_auto.get_group_msg(group=group)
+        # for i in gs.content:
+        #     print(f"{i.nickname}: {i.msg}")
+        safe_group = re.sub(r'[^\w\u4e00-\u9fff]', '', group).replace(" ", "")
+        path = os.path.join(PATH_CACHE, f"{safe_group}.txt")
+        wx_ad = extract_group_msg(self.llm, gs.llm_content, path)
+        for i in wx_ad["ad"]:
+            print(i)

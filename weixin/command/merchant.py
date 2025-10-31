@@ -26,7 +26,8 @@ def extract_product():
     # (**i) for i in df.to_dict("records")]
     # print(accounts)
     # wx_auto_svc.add_tag(accounts, ["商家"])
-    print(wx_auto_svc.get_friends(tag="z"))
+    # print(wx_auto_svc.get_friends(tag="z"))
+    wx_auto_svc.get_group_msg("爆单🈺9班投流群（爆单10🈷️）")
 
 if __name__ == "__main__":
     extract_product()

@@ -19,10 +19,12 @@ class Product(Base):
     product_url = Column(VARCHAR(255), nullable=False)
     is_promoted = Column(Boolean, default=False)
     rate = Column(Float, nullable=True)
-    nickname = Column(VARCHAR(255), nullable=True)  # 新增字段
+    remark = Column(VARCHAR(255), nullable=True)  # 新增字段
+    # 一级类目
+    # 二级类目
 
-    # 联合唯一键：(nickname, product_url)
-    __table_args__ = (UniqueConstraint('nickname', 'product_url', name='uix_nickname_product_url'),)
+    # 联合唯一键：(remark, product_url)
+    __table_args__ = (UniqueConstraint('remark', 'product_url', name='uix_remark_product_url'),)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -48,3 +50,15 @@ class Product(Base):
         db.flush()  # 立即执行插入，获取 id
         print(f"[Product.create] Created product: {product}")
         return product
+
+
+# class AdRecord(Base):
+#     """
+#     投流记录
+#     """
+#     # product_url
+#     # remark
+#     # 物流号
+#     # 平台
+#     # video_url
+#     # 投流金额

@@ -4,7 +4,9 @@ from weixin.internal.wx_auto.type import (
     ChatMsg,
     ChatInfo,
     FriendReq,
-    WxAccount
+    WxAccount,
+    GroupChatInfo,
+    GroupChatMsg
 )
 
 
@@ -14,6 +16,45 @@ class WxAuto:
 
     def chat(self, who, msg):
         self.wx.SendMsg(msg, who=who, exact=True)
+    
+    def get_group_msg(self, group: str, max_load=0, 
+                      friends=["陈文", "周凯"]) -> GroupChatInfo:
+        """
+        获取群消息
+        """
+        wx = self.wx
+        cur_chat = wx.ChatInfo()
+        if not (cur_chat["chat_name"] == group):
+            wx.ChatWith(who=group)
+        
+        group_chat = GroupChatInfo(
+            group=group,
+            last_id=-1,
+            last_msg="",
+            content=[]
+        )
+        if max_load > 0:
+            has_more = self.wx.LoadMoreMessage(interval=0.5)
+            start = max_load
+            while start > 0 and has_more["status"] == "成功":
+                has_more = self.wx.LoadMoreMessage(interval=0.05)
+                start -= 1
+                print(has_more["status"], start)
+
+        msgs = wx.GetAllMessage()
+
+        for msg in msgs:
+            # print(msg.type, msg.content, msg.sender_remark)
+            if (not friends) or (msg.sender_remark in friends):
+                g_message = GroupChatMsg(
+                    nickname=msg.sender_remark,
+                    type=msg.type,
+                    msg=msg.content
+                )
+                group_chat.content.append(
+                    g_message
+                )
+        return group_chat
 
     def get_chat_msg(self, account: WxAccount) -> ChatInfo:
         wx = self.wx

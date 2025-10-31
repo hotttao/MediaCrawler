@@ -4,6 +4,7 @@ PWD =  os.path.dirname(os.path.realpath(__file__))
 PATH_ROOT = os.path.dirname(PWD)
 PATH_DATA = os.path.join(PATH_ROOT, "data")
 PATH_CONFIG = os.path.join(PATH_ROOT, "config")
+PATH_CACHE = os.path.join(PATH_ROOT, "cache")
 
 
 CHAT_EXAMPLE = """,

@@ -52,3 +52,22 @@ class FriendReq(BaseModel):
     req_msg: str
     wx_op: Any
 
+
+class GroupChatMsg(BaseModel):
+    nickname: str
+    msg: str
+    type: str
+
+
+class GroupChatInfo(BaseModel):
+    group: str # 群名称
+    content: List[GroupChatMsg]
+    last_id: int
+    last_msg: str
+
+    @property
+    def llm_content(self):
+        buffer = io.StringIO()
+        for s in self.content:
+            buffer.write(f"{s.nickname}: {s.msg}\n")
+        return buffer.getvalue()
