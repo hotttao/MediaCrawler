@@ -15,11 +15,16 @@ def extract_product():
         wx_chat=WX,
         engine=engine
     )
+
+    # 1. 缓存所有商家的微信昵称
+    # wx_auto_svc.cache_merchant()
+
+    # 2. 缓存所有商家的聊天记录
+    friends = wx_auto_svc.load_merchant_cache()
+    wx_auto_svc.cache_chat(friends)
     # account = WxAccount(wx_id="zzcc565511", nickname="木木", remark="z_白杨树卷纸投流品")
     # wx_auto_svc.extrac_merchant(account)
-    # accounts = wx_auto_svc.get_friends(prefix="z_", max_num=None)
-    # df = pandas.DataFrame([i.model_dump() for i in accounts])
-    # df.to_csv("z_.csv", index=False)
+    
     # df = pandas.read_csv("z_.csv")
     # accounts = [WxAccount
     # 
@@ -27,7 +32,7 @@ def extract_product():
     # print(accounts)
     # wx_auto_svc.add_tag(accounts, ["商家"])
     # print(wx_auto_svc.get_friends(tag="z"))
-    wx_auto_svc.get_group_msg("爆单🈺9班投流群（爆单10🈷️）")
+    # wx_auto_svc.get_group_msg("爆单🈺9班投流群（爆单10🈷️）")
 
 if __name__ == "__main__":
     extract_product()

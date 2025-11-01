@@ -15,14 +15,14 @@ class ChatMsg(BaseModel):
     is_self: bool # 是否是自己发送的消息
     # ref: str # 引用的消息
 
-    def to_text(self):
+    def to_text(self, split="\n"):
         if self.type != "text":
                 return ""
         if self.is_self:
-            return f"我: {self.msg}"
+            return f"我: {self.msg}{split}"
         else:
             nickname = self.account.remark or self.account.nickname
-            return f"{nickname}: {self.msg}"
+            return f"{nickname}: {self.msg}{split}"
 
 
 class ChatInfo(BaseModel):
@@ -34,10 +34,23 @@ class ChatInfo(BaseModel):
     friend_last_msg: Optional[str] = None
     friend_last_id: Optional[int] = None
 
+    def to_dict(self):
+        c = self.model_dump()
+        c["account"] = self.account.remark
+        del c["content"]
+        return c
+
     @property
     def last_msg(self):
         return self.friend_last_msg \
             if self.last_id == self.friend_last_id else self.self_last_msg
+
+    @property
+    def llm_content_csv(self):
+        buffer = io.StringIO()
+        for s in self.content:
+            buffer.write(s.to_text(split="\n\n"))
+        return buffer.getvalue()
 
     @property
     def llm_content(self):

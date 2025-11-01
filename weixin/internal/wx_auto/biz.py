@@ -16,6 +16,17 @@ class WxAuto:
 
     def chat(self, who, msg):
         self.wx.SendMsg(msg, who=who, exact=True)
+
+    def load_chat_msg(self, max_load):
+        if max_load > 0:
+            try:
+                has_more = self.wx.LoadMoreMessage(interval=0.5)
+                start = max_load
+                while start > 0 and has_more["status"] == "成功":
+                    has_more = self.wx.LoadMoreMessage(interval=0.5)
+                    start -= 1
+            except IndexError:
+                print(f"没有更多聊天记录")
     
     def get_group_msg(self, group: str, max_load=0, 
                       friends=["陈文", "周凯"]) -> GroupChatInfo:
@@ -33,14 +44,7 @@ class WxAuto:
             last_msg="",
             content=[]
         )
-        if max_load > 0:
-            has_more = self.wx.LoadMoreMessage(interval=0.5)
-            start = max_load
-            while start > 0 and has_more["status"] == "成功":
-                has_more = self.wx.LoadMoreMessage(interval=0.05)
-                start -= 1
-                print(has_more["status"], start)
-
+        self.load_chat_msg(max_load)
         msgs = wx.GetAllMessage()
 
         for msg in msgs:
@@ -58,10 +62,12 @@ class WxAuto:
 
     def get_chat_msg(self, account: WxAccount) -> ChatInfo:
         wx = self.wx
-        wx.ChatWith(who=account.wx_id)
+        cur_chat = wx.ChatInfo()
+        if not (cur_chat["chat_name"] == account.remark):
+            wx.ChatWith(who=account.remark)
+        self.load_chat_msg(max_load=5000)
         # 获取当前聊天窗口消息
         msgs = wx.GetAllMessage()
-        chat_msgs = []
         chat_info = ChatInfo(
             account=account,
             content=[],

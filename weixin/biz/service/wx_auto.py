@@ -2,8 +2,9 @@ import os
 import re
 import random
 import time
+import pandas
 from typing import List
-from weixin.config.const import PATH_CACHE
+from weixin.config.const import PATH_CACHE, PATH_WEXIN
 from weixin.internal.wx_auto.type import WxAccount
 from weixin.internal.wx_auto.biz import WxAuto
 from weixin.internal.product.biz import ProductBiz
@@ -83,3 +84,39 @@ class WeixinAutoService:
         wx_ad = extract_group_msg(self.llm, gs.llm_content, path)
         for i in wx_ad["ad"]:
             print(i)
+
+    def cache_merchant(self):
+        path = os.path.join(PATH_WEXIN, "merchant_wx.csv")
+        accounts = self.get_friends(prefix="z_", max_num=None, tag="z")
+        df = pandas.DataFrame([i.model_dump() for i in accounts])
+        df.to_csv(path, index=False, encoding="utf_8_sig")
+
+    def load_merchant_cache(self):
+        path = os.path.join(PATH_WEXIN, "merchant_wx.csv")
+        df = pandas.read_csv(path)
+        merchants = [WxAccount(**i) for i in df.to_dict("records")]
+        return merchants
+
+    def cache_chat(self, friends: List[WxAccount]):
+        """
+        缓存好友的聊天记录
+        """
+        # friends = [i for i in friends if i.remark == "z_白杨树卷纸投流品"]
+        for i in friends:
+            p_chat_id = os.path.join(PATH_WEXIN, "chat", f"{i.remark}.csv")
+            p_chat_content = os.path.join(PATH_WEXIN, "chat", f"{i.remark}_content.txt")
+            chat_msg = self.wx_auto.get_chat_msg(i)
+            df =  pandas.DataFrame([chat_msg.to_dict()])
+            df.to_csv(p_chat_id, index=False, encoding="utf_8_sig")
+
+            with open(p_chat_content, "w", encoding="utf_8_sig") as f:
+                f.write(chat_msg.llm_content_csv)
+
+    def load_chat(self, friend: WxAccount):
+        p_chat_id = os.path.join(PATH_WEXIN, "chat", f"{friend.remark}.csv")
+        p_chat_content = os.path.join(PATH_WEXIN, "chat", f"{friend.remark}_content.txt")
+        df_chat = pandas.read_csv(p_chat_id)
+        if df_chat.empty:
+            return None, ""
+        with open(p_chat_content, "r") as f:
+            content = f.read()
