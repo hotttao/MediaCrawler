@@ -13,4 +13,4 @@ class ChatData:
         return df_chat
     
     def save(self, session, chat_info):
-        Chat.upsert_by_nickname(session, **chat_info)
+        Chat.upsert_by_remark(session, **chat_info)

@@ -1,10 +1,9 @@
 from typing import Optional
-from sqlalchemy import Column, Integer, VARCHAR, Text, DateTime, func
+from sqlalchemy import Column, Integer, VARCHAR, Text, DateTime, func, Float
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import UniqueConstraint
+from weixin.biz.db import Base
 
-Base = declarative_base()
 
 class Chat(Base):
     __tablename__ = 'chat'
@@ -82,16 +81,97 @@ class Chat(Base):
             return new_chat
 
 
-# class Merchant(Base):
-#     pass
-#     # id
-#     # remark
-#     # wx_id
-#     # nickname
-#     # shop
-#     # brand
-#     # category
-#     # 寄样总数
-#     # 投流总金额
-#     # 排片数量
-#     # 评价
+
+class Merchant(Base):
+    __tablename__ = 'merchant'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    remark = Column(VARCHAR(255), nullable=False, index=True)  # 用作唯一键，加索引
+    wx_id = Column(VARCHAR(255), nullable=True)
+    nickname = Column(VARCHAR(255), nullable=True)
+    shop = Column(VARCHAR(255), nullable=True)
+    brand = Column(VARCHAR(255), nullable=True)
+    category = Column(VARCHAR(255), nullable=True)
+
+    sample_count = Column(Integer, default=0, nullable=False)        # 寄样总数
+    ad_spend_total = Column(Float, default=0.0, nullable=False)      # 投流总金额
+    scheduling_count = Column(Integer, default=0, nullable=False)    # 排片数量
+
+    evaluation = Column(Text, nullable=True)  # 评价
+
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 添加唯一约束：remark 唯一
+    __table_args__ = (
+        UniqueConstraint('remark', name='uix_merchant_remark'),
+    )
+
+    def __repr__(self):
+        return f"<Merchant(id={self.id}, remark='{self.remark}', brand='{self.brand}', shop='{self.shop}')>"
+
+    @classmethod
+    def create(cls, db: Session, **kwargs):
+        """
+        创建新商户。
+        """
+        if 'remark' not in kwargs:
+            raise ValueError("Field 'remark' is required to create a merchant.")
+
+        merchant = cls(**kwargs)
+        db.add(merchant)
+        db.flush()
+        print(f"[Merchant.create] Created merchant: {merchant}")
+        return merchant
+
+    @classmethod
+    def upsert_by_remark(cls, db: Session, **kwargs):
+        """
+        根据 'remark' 字段执行 upsert 操作：
+        - 如果存在，则更新传入的非 None 字段
+        - 如果不存在，则创建新记录
+
+        :param db: SQLAlchemy Session
+        :param kwargs: Merchant 字段（必须包含 'remark'）
+        :return: (Merchant 实例, is_created: bool)
+        """
+        remark = kwargs.get('remark')
+        if not remark:
+            raise ValueError("Field 'remark' is required for upsert_by_remark.")
+
+        # 查询是否已存在
+        merchant = db.query(cls).filter(cls.remark == remark).first()
+
+        is_created = False
+
+        if merchant:
+            # 更新已有记录：仅更新非 None 值
+            updated_fields = []
+            for key, value in kwargs.items():
+                if value is not None and getattr(merchant, key, None) != value:
+                    setattr(merchant, key, value)
+                    updated_fields.append(key)
+            if updated_fields:
+                # 显式设置 updated_at，确保触发更新
+                merchant.updated_at = func.now()
+                print(f"[Merchant.upsert_by_remark] Updated merchant '{remark}': {updated_fields}")
+        else:
+            # 创建新商户
+            merchant = cls(**kwargs)
+            db.add(merchant)
+            db.flush()  # 获取 id
+            is_created = True
+            print(f"[Merchant.upsert_by_remark] Created new merchant: {merchant}")
+
+        db.flush()  # 确保写入数据库
+        return merchant, is_created
+
+    @classmethod
+    def get_by_remark(cls, db: Session, remark: str):
+        """根据 remark 查询商户"""
+        return db.query(cls).filter(cls.remark == remark).first()
+
+    @classmethod
+    def get_by_wx_id(cls, db: Session, wx_id: str):
+        """根据 wx_id 查询商户"""
+        return db.query(cls).filter(cls.wx_id == wx_id).first()

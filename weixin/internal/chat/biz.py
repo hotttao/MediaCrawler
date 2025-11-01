@@ -14,15 +14,15 @@ class ChatBiz:
         df_chat = self.chat_data.get_all_chat()
         cache = {}
         for i in df_chat.to_dict("records"):
-            cache[i["nickname"]] = {
+            cache[i["remark"]] = {
                 "last_msg": i["last_msg"],
                 "last_id": str(i["last_id"])
             }
         return cache
 
-    def is_chat_cached(self, nickname, last_id):
+    def is_chat_cached(self, remark, last_id):
         cache_chat = self.cache
-        who = nickname
+        who = remark
         if who in cache_chat and last_id == cache_chat[who]["last_id"]:
             return True
         return False

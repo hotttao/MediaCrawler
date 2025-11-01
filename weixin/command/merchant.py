@@ -20,8 +20,13 @@ def extract_product():
     # wx_auto_svc.cache_merchant()
 
     # 2. 缓存所有商家的聊天记录
+    # friends = wx_auto_svc.load_merchant_cache()
+    # wx_auto_svc.cache_chat(friends)
+
+    # 3. 从缓存聊天记录解析商家发送的信息
     friends = wx_auto_svc.load_merchant_cache()
-    wx_auto_svc.cache_chat(friends)
+    wx_auto_svc.extract_merchant_from_cache(friends)
+
     # account = WxAccount(wx_id="zzcc565511", nickname="木木", remark="z_白杨树卷纸投流品")
     # wx_auto_svc.extrac_merchant(account)
     

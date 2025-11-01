@@ -3,12 +3,14 @@ import re
 import random
 import time
 import pandas
+import json
 from typing import List
 from weixin.config.const import PATH_CACHE, PATH_WEXIN
 from weixin.internal.wx_auto.type import WxAccount
 from weixin.internal.wx_auto.biz import WxAuto
 from weixin.internal.product.biz import ProductBiz
 from weixin.internal.chat.biz import ChatBiz
+from weixin.internal.wx_auto.type import ChatInfo
 from weixin.agent.node.merchant import extract_merchant_info
 from weixin.agent.node.role import extract_role
 from weixin.agent.node.wx_ad import extract_group_msg
@@ -35,20 +37,32 @@ class WeixinAutoService:
         if self.biz_chat.is_chat_cached(account.wx_id, chat_info.last_id):
             print(f'{chat_info["nickname"]} 最近消息已处理')
             return
-        chat_content = chat_info.llm_content
+        merchant_info = extract_merchant_info(llm=self.llm, wx_msg=chat_info.llm_content)
+        self.save_product(account, chat_info, merchant_info=merchant_info)
+        self.save_merchant(account, merchant_info)
+    
+    def save_product(self, account, chat_info, merchant_info):
         # chat_content = CHAT_EXAMPLE
-        merchant_info = extract_merchant_info(llm=self.llm, wx_msg=chat_content)
         products = merchant_info.get("products", [])
         with get_db() as session:
             self.biz_product.save_from_llm(
-                session, account.nickname, products
+                session, account.remark, products
             )
             c = {
-                "nickname": chat_info.account.nickname, 
+                "remark": account.remark, 
                 "last_msg": chat_info.last_msg, 
                 "last_id": chat_info.last_id
             }
             self.biz_chat.save(session, c)
+    
+    def save_merchant(self, account, merchant_info):
+        sample_count = 0
+        if merchant_info.get("sample_send"):
+            sample_count = 1
+        with get_db() as session:
+            self.biz_product.save_merchant(
+                session, account.remark, sample_count
+            )
 
     def add_new_friends(self):
         new_reqs = self.get_new_friends()
@@ -118,5 +132,29 @@ class WeixinAutoService:
         df_chat = pandas.read_csv(p_chat_id)
         if df_chat.empty:
             return None, ""
-        with open(p_chat_content, "r") as f:
+        with open(p_chat_content, "r", encoding="utf_8_sig") as f:
             content = f.read()
+        df_chat.fillna("", inplace=True)
+        df_chat["self_last_msg"] = df_chat["self_last_msg"].astype(str)
+        df_chat["friend_last_msg"] = df_chat["friend_last_msg"].astype(str)
+        chat_info = df_chat.iloc[0].to_dict()
+        chat_info["account"] = friend
+        chat_info["content"] = []
+        print(chat_info)
+        chat_info = ChatInfo(**chat_info)
+        return chat_info, content
+    
+    def extract_merchant_from_cache(self, friends: List[WxAccount]):
+        # friends = [i for i in friends if i.remark == "z_白杨树卷纸投流品"]
+        for i in friends:
+            print(i)
+            chat_info, content = self.load_chat(i)
+            if chat_info is None or content == "":
+                continue
+            # print(chat_info)
+            # print(content)
+            merchant_info = extract_merchant_info(llm=self.llm, wx_msg=content)
+            # print(json.dumps(merchant_info, indent=4))
+            # return merchant_info
+            self.save_product(i, chat_info, merchant_info=merchant_info)
+            self.save_merchant(i, merchant_info)

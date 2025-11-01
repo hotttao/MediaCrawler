@@ -1,7 +1,7 @@
 import copy
 import pandas
 
-from weixin.biz.model import Product
+from weixin.biz.model import Product, Merchant
 
 
 def format_product_info(products):
@@ -38,3 +38,6 @@ class ProductData:
             return
         for i in df.to_dict("records"):
             Product.create(session, **i)
+
+    def save_merchant(self, session, remark, sample_count):
+        Merchant.upsert_by_remark(db=session, remark=remark, sample_count=sample_count)
