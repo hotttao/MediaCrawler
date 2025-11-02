@@ -1,13 +1,24 @@
 import copy
 import pandas
-
+import secrets
+import string
 from weixin.biz.model import Product, Merchant
+
+
+def generate_secure_string(length: int) -> str:
+    """
+    生成加密安全的随机字符串（适合密码、token 等）。
+    """
+    chars = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
 
 
 def format_product_info(products):
     c = []
     for p in products:
         commissions = p.pop("commissions", None)
+        if not p.get("product_url"):
+            p["product_url"] = generate_secure_string(16)
         if not commissions:
             print(f"未解析到佣金信息")
             continue
@@ -37,7 +48,8 @@ class ProductData:
         if df.empty:
             return
         for i in df.to_dict("records"):
-            Product.create(session, **i)
+            r = {k: v for k, v in i.items() if not pandas.isna(v)}
+            Product.create(session, **r)
 
     def save_merchant(self, session, remark, sample_count):
         Merchant.upsert_by_remark(db=session, remark=remark, sample_count=sample_count)

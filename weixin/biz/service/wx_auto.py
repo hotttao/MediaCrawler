@@ -45,9 +45,10 @@ class WeixinAutoService:
         # chat_content = CHAT_EXAMPLE
         products = merchant_info.get("products", [])
         with get_db() as session:
-            self.biz_product.save_from_llm(
-                session, account.remark, products
-            )
+            if products:
+                self.biz_product.save_from_llm(
+                    session, account.remark, products
+                )
             c = {
                 "remark": account.remark, 
                 "last_msg": chat_info.last_msg, 
@@ -140,21 +141,20 @@ class WeixinAutoService:
         chat_info = df_chat.iloc[0].to_dict()
         chat_info["account"] = friend
         chat_info["content"] = []
-        print(chat_info)
         chat_info = ChatInfo(**chat_info)
         return chat_info, content
     
     def extract_merchant_from_cache(self, friends: List[WxAccount]):
-        # friends = [i for i in friends if i.remark == "z_白杨树卷纸投流品"]
+        # friends = [i for i in friends if i.remark == "z_奥利奥"]
         for i in friends:
             print(i)
             chat_info, content = self.load_chat(i)
             if chat_info is None or content == "":
                 continue
             # print(chat_info)
-            # print(content)
+            print(content)
             merchant_info = extract_merchant_info(llm=self.llm, wx_msg=content)
-            # print(json.dumps(merchant_info, indent=4))
+            print(json.dumps(merchant_info, indent=4))
             # return merchant_info
             self.save_product(i, chat_info, merchant_info=merchant_info)
             self.save_merchant(i, merchant_info)
