@@ -18,7 +18,10 @@ class Product(Base):
     price = Column(Float, nullable=False)
     product_url = Column(VARCHAR(255), nullable=False)
     is_promoted = Column(Boolean, default=False)
+    wx_promot = Column(VARCHAR(255), nullable=True, comment="视频号投流方式")
     rate = Column(Float, nullable=True)
+    roi = Column(Float, nullable=True, comment="ROI")
+    roi_desc = Column(VARCHAR(255), nullable=True, comment="ROI描述")
     remark = Column(VARCHAR(255), nullable=True)  # 新增字段
     sample_send = Column(Boolean, default=False, comment="是否寄样")
     track_num = Column(VARCHAR(255), default="", comment="快递单号")

@@ -145,7 +145,7 @@ class WeixinAutoService:
         return chat_info, content
     
     def extract_merchant_from_cache(self, friends: List[WxAccount]):
-        # friends = [i for i in friends if i.remark == "z_奥利奥"]
+        # friends = [i for i in friends if i.remark == "z_百菲酪_牛奶"]
         for i in friends:
             print(i)
             chat_info, content = self.load_chat(i)

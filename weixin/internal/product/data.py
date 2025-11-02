@@ -25,12 +25,18 @@ def format_product_info(products):
         if len(commissions) == 1:
             p["is_promoted"] = commissions[0]["is_promoted"]
             p["rate"] = commissions[0]["rate"]
+            if "roi" in commissions[0]:
+                p["roi"] = commissions[0]["roi"]
+                p["roi_desc"] = commissions[0]["roi_desc"]
             c.append(p)
         else:
             for i in commissions:
                 d = copy.deepcopy(p)
                 d["is_promoted"] = i["is_promoted"]
                 d["rate"] = i["rate"]
+                if "roi" in i:
+                    d["roi"] = i["roi"]
+                    d["roi_desc"] = i["roi_desc"]
                 c.append(d)
     return c
 
