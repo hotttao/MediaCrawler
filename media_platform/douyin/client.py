@@ -30,7 +30,7 @@ class DouYinClient(AbstractApiClient):
 
     def __init__(
         self,
-        timeout=60,  # 若开启爬取媒体选项，抖音的短视频需要更久的超时时间
+        timeout=180,  # 若开启爬取媒体选项，抖音的短视频需要更久的超时时间
         proxy=None,
         *,
         headers: Dict,

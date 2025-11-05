@@ -197,7 +197,10 @@ def generate_html_report(target_date: str, result_df1: pd.DataFrame, result_df2:
 </body>
 </html>
 """
-    output_file = os.path.join(PWD, "report", f"{output_path}_{target_date}.html")
+    p_report =  os.path.join(PWD, "report")
+    if not os.path.exists(p_report):
+        os.makedirs(p_report)
+    output_file = os.path.join(p_report, f"{output_path}_{target_date}.html")
     Path(output_file).write_text(html_template, encoding="utf-8")
     print(f"✅ 报表已生成: {output_file}")
 
@@ -228,7 +231,7 @@ parser.add_argument(
 )
 
 def main():
-    from dy_incr import cal_day_incr
+    from dy_parse.dy_incr import cal_day_incr
     # target_date = "2025-10-08"
     args = parser.parse_args()
     days = args.days  # 必须存在

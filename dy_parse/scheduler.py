@@ -39,13 +39,13 @@ def main():
     # 使用cron表达式设置定时任务
     # 从00:30开始，每隔4小时执行一次
     # 即: 00:30, 04:30, 08:30, 12:30, 16:30, 20:30
-    # cron_trigger = CronTrigger(
-    #     minute=30,  # 每小时的30分
-    #     hour='0,4,8,12,16,20'  # 在0点、4点、8点、12点、16点、20点执行
-    # )
     cron_trigger = CronTrigger(
-        minute='*'  # 每分钟执行
+        minute=42,  # 每小时的30分
+        hour='0,4,8,12,16,20'  # 在0点、4点、8点、12点、16点、20点执行
     )
+    # cron_trigger = CronTrigger(
+    #     minute='*'  # 每分钟执行
+    # )
     
     scheduler.add_job(
         job, cron_trigger, id='periodic_job',
