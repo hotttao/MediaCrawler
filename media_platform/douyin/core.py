@@ -220,8 +220,10 @@ class DouYinCrawler(AbstractCrawler):
         """
         Get the information and videos of the specified creator
         """
-        utils.logger.info("[DouYinCrawler.get_creators_and_videos] Begin get douyin creators")
-        for user_id in config.DY_CREATOR_ID_LIST:
+        from config.dy_config import get_creator_id_list
+        creator_id_list = get_creator_id_list()
+        utils.logger.info(f"[DouYinCrawler.get_creators_and_videos] Begin get douyin creators, total: {len(creator_id_list)}")
+        for user_id in creator_id_list:
             creator_info: Dict = await self.dy_client.get_user_info(user_id)
             if creator_info:
                 await douyin_store.save_creator(user_id, creator=creator_info)

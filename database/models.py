@@ -213,6 +213,17 @@ class DyCreator(Base):
     interaction = Column(Text)
     videos_count = Column(String(255))
 
+
+class DyCrawlerCreator(Base):
+    """用于存储待抓取的抖音创作者ID列表"""
+    __tablename__ = 'dy_crawler_creator'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(255), nullable=False, index=True, unique=True)
+    nickname = Column(Text)
+    add_ts = Column(BigInteger)
+    is_enabled = Column(Integer, default=1)  # 1: 启用, 0: 禁用
+
+
 class KuaishouVideo(Base):
     __tablename__ = 'kuaishou_video'
     id = Column(Integer, primary_key=True)
