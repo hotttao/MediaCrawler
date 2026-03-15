@@ -42,44 +42,51 @@ def get_creator_id_list() -> list:
 
     # 2. 从数据库读取配置（仅读取启用的记录）
     db_ids = []
-    try:
-        import config
+    # try:
+    import config
 
-        if config.SAVE_DATA_OPTION in ("mysql", "db", "sqlite"):
-            import asyncio
-            from database.db_session import get_async_engine
+    if config.SAVE_DATA_OPTION == "db":
+        import asyncio
+        from database.db_session import get_async_engine
 
-            async def fetch_db_creator_ids():
-                engine = get_async_engine(config.SAVE_DATA_OPTION)
-                if engine is None:
-                    return []
-                from sqlalchemy.ext.asyncio import AsyncSession
-                from sqlalchemy.orm import sessionmaker
+        async def fetch_db_creator_ids():
+            engine = get_async_engine("db")
+            if engine is None:
+                return []
+            from sqlalchemy.ext.asyncio import AsyncSession
+            from sqlalchemy.orm import sessionmaker
 
-                AsyncSessionFactory = sessionmaker(
-                    engine, class_=AsyncSession, expire_on_commit=False
+            AsyncSessionFactory = sessionmaker(
+                engine, class_=AsyncSession, expire_on_commit=False
+            )
+            async with AsyncSessionFactory() as session:
+                stmt = select(DyCrawlerCreator.user_id).where(
+                    DyCrawlerCreator.is_enabled == 1
                 )
-                async with AsyncSessionFactory() as session:
-                    stmt = select(DyCrawlerCreator.user_id).where(
-                        DyCrawlerCreator.is_enabled == 1
-                    )
-                    result = await session.execute(stmt)
-                    rows = result.scalars().all()
-                    return rows
+                result = await session.execute(stmt)
+                rows = result.scalars().all()
+                print(rows)
 
-            # 获取事件循环并执行异步函数
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+                return rows
 
-            db_ids = loop.run_until_complete(fetch_db_creator_ids())
-    except Exception as e:
-        import sys
-        from tools import utils
+        # 在已有事件循环中运行异步函数
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # 如果循环正在运行，使用线程池执行
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, fetch_db_creator_ids())
+                    db_ids = future.result()
+            else:
+                db_ids = loop.run_until_complete(fetch_db_creator_ids())
+        except RuntimeError:
+            db_ids = asyncio.run(fetch_db_creator_ids())
+    # except Exception as e:
+    #     import sys
+    #     from tools import utils
 
-        utils.logger.warning(f"[get_creator_id_list] 从数据库读取创作者ID失败: {e}")
+    #     utils.logger.warning(f"[get_creator_id_list] 从数据库读取创作者ID失败: {e}")
 
     # 3. 合并并去重
     all_ids = list(set(config_ids + db_ids))
