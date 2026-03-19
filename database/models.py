@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, Text, String, BigInteger
-from sqlalchemy import PrimaryKeyConstraint
+from sqlalchemy import PrimaryKeyConstraint, UniqueConstraint, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -498,3 +498,33 @@ class ZhihuCreator(Base):
     get_voteup_count = Column(Integer, default=0)
     add_ts = Column(BigInteger)
     last_modify_ts = Column(BigInteger)
+
+
+class DouyinAwemeDay(Base):
+    __tablename__ = 'douyin_aweme_day'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    aweme_id = Column(String(64), nullable=False, index=True, comment="视频ID")
+    data_date = Column(String(10), nullable=False, comment="数据日期，格式YYYY-MM-DD")
+    sec_uid = Column(String(64), nullable=True, comment="用户sec_uid")
+    nickname = Column(Text, nullable=True, comment="用户昵称")
+    aweme_url = Column(Text, nullable=True, comment="视频URL")
+    create_time = Column(BigInteger, nullable=True, comment="视频创建时间")
+    elastic_title = Column(Text, nullable=True, comment="视频标题（用于聚合）")
+    product_id = Column(String(64), nullable=True, comment="商品ID")
+    product_title = Column(Text, nullable=True, comment="商品标题")
+    digg_count = Column(Integer, nullable=False, default=0, comment="日增点赞")
+    collect_count = Column(Integer, nullable=False, default=0, comment="日增收藏")
+    share_count = Column(Integer, nullable=False, default=0, comment="日增转发")
+    digg_tt = Column(Integer, nullable=False, default=0, comment="当前总点赞")
+    collect_tt = Column(Integer, nullable=False, default=0, comment="当前总收藏")
+    share_tt = Column(Integer, nullable=False, default=0, comment="当前总转发")
+    comment_count = Column(Integer, nullable=False, default=0, comment="当前总评论")
+    first_update_ts = Column(BigInteger, nullable=True, comment="首次抓取时间")
+    last_update_ts = Column(BigInteger, nullable=True, comment="最后一次抓取时间")
+    add_ts = Column(BigInteger, nullable=True, comment="记录添加时间")
+    # 联合唯一索引，防止重复插入同一天的数据
+    __table_args__ = (
+        UniqueConstraint('aweme_id', 'data_date', name='uq_aweme_id_data_date'),
+        Index('idx_data_date', 'data_date'),
+        Index('idx_sec_uid', 'sec_uid'),
+    )
