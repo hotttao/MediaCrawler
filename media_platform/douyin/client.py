@@ -283,7 +283,11 @@ class DouYinClient(AbstractApiClient):
         }
         return await self.get(uri, params)
 
-    async def get_user_aweme_posts(self, sec_user_id: str, max_cursor: str = "") -> Dict:
+    async def get_user_aweme_posts(
+        self, sec_user_id: str, max_cursor: str = ""
+    ) -> Dict:
+        local_storage = await self.playwright_page.evaluate("() => window.localStorage")
+        verify_fp = local_storage.get("verifyFp", "")
         uri = "/aweme/v1/web/aweme/post/"
         params = {
             "sec_user_id": sec_user_id,
@@ -291,8 +295,9 @@ class DouYinClient(AbstractApiClient):
             "max_cursor": max_cursor,
             "locate_query": "false",
             "publish_video_strategy_type": 2,
-            'verifyFp': 'verify_ma3hrt8n_q2q2HyYA_uLyO_4N6D_BLvX_E2LgoGmkA1BU',
-            'fp': 'verify_ma3hrt8n_q2q2HyYA_uLyO_4N6D_BLvX_E2LgoGmkA1BU'
+            # "verifyFp": "verify_ma3hrt8n_q2q2HyYA_uLyO_4N6D_BLvX_E2LgoGmkA1BU",
+            "verifyFp": verify_fp,
+            "fp": "verify_ma3hrt8n_q2q2HyYA_uLyO_4N6D_BLvX_E2LgoGmkA1BU",
         }
         return await self.get(uri, params)
 
