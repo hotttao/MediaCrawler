@@ -1,0 +1,12 @@
+name: skill-vetter
+description: Security-first skill vetting tool. Scans and reviews skill code before installation to detect red flags, permission risks, and suspicious patterns. Invoke before installing any new skill from external sources.
+version: 1.0.0
+source: https://clawhub.ai/spclaudehome/skill-vetter
+license: MIT-0
+stats:
+  downloads: 167000
+  stars: 710
+  installs: 3300
+security:
+  rating: Benign
+  confidence: High

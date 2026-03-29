@@ -13,8 +13,8 @@ PUBLISH_TIME_TYPE = 0
 
 # 指定DY视频ID列表
 DY_SPECIFIED_ID_LIST = [
-    "7280854932641664319",
-    "7202432992642387233",
+    # "7280854932641664319",
+    # "7202432992642387233",
     # ........................
 ]
 
@@ -75,6 +75,7 @@ def get_creator_id_list() -> list:
             if loop.is_running():
                 # 如果循环正在运行，使用线程池执行
                 import concurrent.futures
+
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(asyncio.run, fetch_db_creator_ids())
                     db_ids = future.result()

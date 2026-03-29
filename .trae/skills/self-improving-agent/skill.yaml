@@ -1,0 +1,4 @@
+name: self-improving-agent
+description: Self-Improving Agent - Analyzes and learns from past interactions to continuously improve task completion. Invoke when completing complex tasks or after encountering errors.
+version: 1.0.0
+readme: README.md
