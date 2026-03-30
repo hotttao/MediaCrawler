@@ -93,7 +93,7 @@ class AccountBrowserMiddleware:
             context_page = await browser_context.new_page()
 
         await browser_context.add_init_script(path="libs/stealth.min.js")
-        await context_page.goto("https://www.douyin.com")
+        await context_page.goto("https://www.douyin.com", timeout=300000)
 
         session = AccountSession(
             account_id=account_id,

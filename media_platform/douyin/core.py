@@ -82,7 +82,7 @@ class DouYinCrawler(AbstractCrawler):
             self.browser_context = self.external_browser_context
             self.context_page = self.external_context_page
             self._owns_browser = False
-            await self.context_page.goto(self.index_url)
+            await self.context_page.goto(self.index_url, timeout=300000)
         else:
             async with async_playwright() as playwright:
                 if config.ENABLE_CDP_MODE:
@@ -107,7 +107,7 @@ class DouYinCrawler(AbstractCrawler):
                     )
                 await self.browser_context.add_init_script(path="libs/stealth.min.js")
                 self.context_page = await self.browser_context.new_page()
-                await self.context_page.goto(self.index_url)
+                await self.context_page.goto(self.index_url, timeout=300000)
                 self._owns_browser = True
 
         self.dy_client = await self.create_douyin_client(httpx_proxy_format)
