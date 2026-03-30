@@ -181,3 +181,4 @@ debug_tools
 database/*.db
 
 dy_parse/report
+.qrcode_images/*
