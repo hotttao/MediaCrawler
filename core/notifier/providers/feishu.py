@@ -39,9 +39,12 @@ class FeishuNotifier(BaseNotifier):
         if not self.enabled:
             return False
 
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         message = {
             "msg_type": "text",
-            "content": json.dumps({"text": f"{title}\n{content}"}),
+            "content": json.dumps({"text": f"{title}\n{content}\n\n⏰ {timestamp}"}),
         }
         return await self._send_request(message)
 
@@ -49,6 +52,10 @@ class FeishuNotifier(BaseNotifier):
         if not self.enabled:
             return False
 
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        content_with_time = f"{content}\n\n⏰ {timestamp}"
         message = {
             "msg_type": "post",
             "content": json.dumps(
@@ -56,7 +63,7 @@ class FeishuNotifier(BaseNotifier):
                     "post": {
                         "zh_cn": {
                             "title": title,
-                            "content": [[{"tag": "text", "text": content}]],
+                            "content": [[{"tag": "text", "text": content_with_time}]],
                         }
                     }
                 }
