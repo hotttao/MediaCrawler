@@ -31,6 +31,7 @@ def init_loging_config():
 
 logger = init_loging_config()
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -40,3 +41,20 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+def distribute_items_to_groups(items: list, num_groups: int) -> list:
+    """
+    将列表均匀分配给多个组
+    使用轮询分配算法，确保每个组分配到的数量相差不超过1
+    """
+    if num_groups <= 0:
+        return []
+    if not items:
+        return [[] for _ in range(num_groups)]
+
+    result = [[] for _ in range(num_groups)]
+    for i, item in enumerate(items):
+        result[i % num_groups].append(item)
+
+    return result

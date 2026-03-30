@@ -15,86 +15,63 @@ PUBLISH_TIME_TYPE = 0
 DY_SPECIFIED_ID_LIST = [
     # "7280854932641664319",
     # "7202432992642387233",
-    # ........................
 ]
 
 # 指定DY用户ID列表（仅作为备用，优先从数据库读取）
 DY_CREATOR_ID_LIST = [
     # "MS4wLjABAAAA8EoZrCw43AWujry2n4wq63yLNqCxelDngM7hwXT6tY0",
-    # "MS4wLjABAAAAU5VHN-LWFR9_jqqpcFeDgP2tzEFT0RYMi8KMTSnA70g",
 ]
 
 
-def get_creator_id_list() -> list:
+async def get_creator_id_list() -> list:
     """
     获取待抓取的抖音创作者ID列表
     1. 先读取dy_config.py中的DY_CREATOR_ID_LIST
     2. 再读取dy_crawler_creator表配置（is_enabled=1的记录）
     3. 合并后去重，返回最终的user_id列表
     """
-    from sqlalchemy import select
     from database.models import DyCrawlerCreator
-    from database.db_session import get_session
-    import time
-
-    # 1. 读取配置文件中的ID列表
-    config_ids = list(DY_CREATOR_ID_LIST)
-
-    # 2. 从数据库读取配置（仅读取启用的记录）
-    db_ids = []
-    # try:
+    from tools import utils
     import config
 
-    if config.SAVE_DATA_OPTION == "db":
-        import asyncio
-        from database.db_session import get_async_engine
+    config_ids = list(DY_CREATOR_ID_LIST)
+    db_ids = []
 
-        async def fetch_db_creator_ids():
-            engine = get_async_engine("db")
-            if engine is None:
-                return []
+    if config.SAVE_DATA_OPTION == "db":
+        try:
+            from database.db_session import get_async_engine
+            from sqlalchemy import select
             from sqlalchemy.ext.asyncio import AsyncSession
             from sqlalchemy.orm import sessionmaker
+            import asyncio
 
-            AsyncSessionFactory = sessionmaker(
-                engine, class_=AsyncSession, expire_on_commit=False
-            )
-            async with AsyncSessionFactory() as session:
-                stmt = select(DyCrawlerCreator.user_id).where(
-                    DyCrawlerCreator.is_enabled == 1
+            engine = get_async_engine("db")
+            if engine:
+                AsyncSessionFactory = sessionmaker(
+                    engine, class_=AsyncSession, expire_on_commit=False
                 )
-                result = await session.execute(stmt)
-                rows = result.scalars().all()
-                print(rows)
 
-                return rows
+                async def fetch_db_creator_ids():
+                    async with AsyncSessionFactory() as session:
+                        stmt = select(DyCrawlerCreator.user_id).where(
+                            DyCrawlerCreator.is_enabled == 1
+                        )
+                        result = await session.execute(stmt)
+                        return list(result.scalars().all())
 
-        # 在已有事件循环中运行异步函数
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # 如果循环正在运行，使用线程池执行
-                import concurrent.futures
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
 
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(asyncio.run, fetch_db_creator_ids())
-                    db_ids = future.result()
-            else:
-                db_ids = loop.run_until_complete(fetch_db_creator_ids())
-        except RuntimeError:
-            db_ids = asyncio.run(fetch_db_creator_ids())
-    # except Exception as e:
-    #     import sys
-    #     from tools import utils
+                if loop and loop.is_running():
+                    db_ids = await fetch_db_creator_ids()
+                else:
+                    db_ids = asyncio.run(fetch_db_creator_ids())
+        except Exception as e:
+            utils.logger.warning(f"[get_creator_id_list] 从数据库读取创作者ID失败: {e}")
 
-    #     utils.logger.warning(f"[get_creator_id_list] 从数据库读取创作者ID失败: {e}")
-
-    # 3. 合并并去重
     all_ids = list(set(config_ids + db_ids))
-
-    # 记录日志
-    from tools import utils
-
     utils.logger.info(
         f"[get_creator_id_list] 配置文件ID数量: {len(config_ids)}, 数据库ID数量: {len(db_ids)}, 合并后总数: {len(all_ids)}"
     )

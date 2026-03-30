@@ -20,10 +20,66 @@ uv run -m command.crawler_cfg --user_id MS4wLjABAAAA8EoZrCw43AWujry2n4wq63yLNqCx
 # --remove 删除账户
 uv run -m command.crawler_cfg --user_id MS4wLjABAAAA8EoZrCw43AWujry2n4wq63yLNqCxelDngM7hwXT6tY0 --remove
 
+# 更新待爬取账户的昵称
+uv run -m command.crawler_cfg --update_nickname
 
-# 2. 启动爬虫，抓取重点关注的抖音账户数据
+# 2. 启动爬虫，抓取重点关注的抖音账户数据（多账号轮询）
 uv run main.py --platform dy --type creator --lt qrcode --get_comment 0 --save_data_option db
 
 # 3. 计算所有用户，所有发布视频的日增点赞、收藏、转发数
 uv run -m command.cal_day_incr
+
+# 4. 爬取 + 日增计算（一键完成）
+uv run -m command.run_full_crawl
+uv run -m command.run_full_crawl -t 2025-01-15 -d 7
+
+# 5. 从抖音分享链接提取用户ID
+python -m command.extract_douyin_user_id "https://v.douyin.com/mlIAdeKJFxE/"
 ```
+
+# 项目结构
+
+```
+MediaCrawler/
+├── command/           # 命令行入口脚本
+│   ├── crawler_cfg.py           # 创作者配置管理
+│   ├── cal_day_incr.py          # 日增数据计算
+│   ├── run_full_crawl.py       # 爬取+日增计算入口
+│   └── extract_douyin_user_id.py # 用户ID提取
+├── core/              # 核心模块
+│   ├── account_manager.py       # 多账户管理
+│   ├── login_manager.py         # 登录管理
+│   ├── notifier/                # 通知模块
+│   └── task_dispatcher.py       # 任务调度
+├── config/            # 配置文件
+│   ├── account_config.py        # 账户配置
+│   ├── notification_config.py   # 通知配置
+│   └── base_config.py          # 基础配置
+├── test/              # 测试脚本
+│   ├── test_notification.py     # 通知测试
+│   └── test_qrcode_login.py     # 登录测试
+└── dy_parse/          # 定时任务脚本（用户自定义）
+```
+
+# 账户配置
+
+在 `config/account_config.py` 中配置多账户：
+
+```python
+ACCOUNTS = [
+    {
+        "account_id": "account_1",
+        "nickname": "橙子Mama",
+        "phone": "19156537759",
+        "cookies": "",
+    },
+    {
+        "account_id": "account_2",
+        "nickname": "漫游者",
+        "phone": "13826124760",
+        "cookies": "",
+    },
+]
+```
+
+浏览器数据将保存在 `browser_data/dy_user_data_dir/{nickname}/` 目录下。
