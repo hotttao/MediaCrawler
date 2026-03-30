@@ -64,12 +64,20 @@ async def push_hot_videos(
 
 def format_video_message(video: DouyinAwemeDay) -> str:
     """格式化单条视频消息"""
+    publish_time = ""
+    if video.create_time:
+        from datetime import datetime
+
+        publish_time = datetime.fromtimestamp(video.create_time).strftime(
+            "%Y-%m-%d %H:%M"
+        )
     return (
         f"**{video.elastic_title or '无标题'}**\n"
-        f"👤 {video.nickname or '未知'}\n"
-        f"👍 点赞: {video.digg_count} (+{video.digg_tt})\n"
+        f"👤 {video.nickname or '未知'} | 🕐 {publish_time}\n"
+        f"👍 点赞: {video.digg_tt} (+{video.digg_count})\n"
+        f"⭐ 收藏: {video.collect_tt} (+{video.collect_count})\n"
+        f"🔄 分享: {video.share_tt} (+{video.share_count})\n"
         f"💬 评论: {video.comment_count}\n"
-        f"⭐ 收藏: {video.collect_count} (+{video.collect_tt})\n"
         f"🔗 {video.aweme_url or '无链接'}\n"
     )
 
