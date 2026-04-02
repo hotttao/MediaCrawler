@@ -19,6 +19,7 @@ class AccountSession:
 
     account_id: str
     nickname: str
+    browser: Optional[any] = None
     browser_context: Optional[any] = None
     context_page: Optional[any] = None
     is_active: bool = False
@@ -65,6 +66,7 @@ class AccountBrowserMiddleware:
         os.makedirs(user_data_dir, exist_ok=True)
 
         chromium = self.playwright.chromium
+        browser = None
 
         if config.SAVE_LOGIN_STATE:
             utils.logger.info(
@@ -98,6 +100,7 @@ class AccountBrowserMiddleware:
         session = AccountSession(
             account_id=account_id,
             nickname=nickname,
+            browser=browser,
             browser_context=browser_context,
             context_page=context_page,
             is_active=True,
@@ -137,17 +140,23 @@ class AccountBrowserMiddleware:
 
     async def close_current_browser(self):
         """关闭当前浏览器"""
-        if self.current_session and self.current_session.browser_context:
+        if self.current_session:
             try:
                 utils.logger.info(
                     f"[AccountBrowser] 关闭账户 {self.current_session.nickname} 的浏览器"
                 )
-                await self.current_session.browser_context.close()
-                await asyncio.sleep(2)
+                if self.current_session.context_page:
+                    await self.current_session.context_page.close()
+                if self.current_session.browser_context:
+                    await self.current_session.browser_context.close()
+                if self.current_session.browser:
+                    await self.current_session.browser.close()
+                await asyncio.sleep(1)
             except Exception as e:
                 utils.logger.warning(f"[AccountBrowser] 关闭浏览器时出错: {e}")
             finally:
                 self.current_session.is_active = False
+                self.current_session.browser = None
                 self.current_session.browser_context = None
                 self.current_session.context_page = None
                 self.current_session = None
@@ -156,8 +165,27 @@ class AccountBrowserMiddleware:
         """关闭所有会话"""
         await self.close_current_browser()
         if self.playwright:
-            await self.playwright.stop()
+            try:
+                await self.playwright.stop()
+            except Exception as e:
+                utils.logger.warning(f"[AccountBrowser] Playwright stop 失败: {e}")
             self.playwright = None
+        await asyncio.sleep(1)
+        await self._cleanup_orphan_chrome_processes()
+
+    async def _cleanup_orphan_chrome_processes(self):
+        """清理孤立的 chrome 进程"""
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["taskkill", "/F", "/IM", "chrome.exe", "/T"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0:
+                utils.logger.info("[AccountBrowser] 已清理残留的 chrome 进程")
+        except Exception as e:
+            utils.logger.warning(f"[AccountBrowser] 清理 chrome 进程失败: {e}")
 
 
 class AccountScheduler:

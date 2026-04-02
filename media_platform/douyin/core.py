@@ -15,6 +15,7 @@ from asyncio import Task
 from typing import Any, Dict, List, Optional, Tuple
 
 from playwright.async_api import (
+    Browser,
     BrowserContext,
     BrowserType,
     Page,
@@ -39,6 +40,7 @@ from .login import DouYinLogin
 class DouYinCrawler(AbstractCrawler):
     context_page: Page
     dy_client: DouYinClient
+    browser: Optional[Browser] = None
     browser_context: BrowserContext
     cdp_manager: Optional[CDPBrowserManager]
 
@@ -379,8 +381,8 @@ class DouYinCrawler(AbstractCrawler):
             )  # type: ignore
             return browser_context
         else:
-            browser = await chromium.launch(headless=headless, proxy=playwright_proxy)  # type: ignore
-            browser_context = await browser.new_context(
+            self.browser = await chromium.launch(headless=headless, proxy=playwright_proxy)  # type: ignore
+            browser_context = await self.browser.new_context(
                 viewport={"width": 1920, "height": 1080}, user_agent=user_agent
             )
             return browser_context
@@ -426,13 +428,19 @@ class DouYinCrawler(AbstractCrawler):
         if not self._owns_browser:
             utils.logger.info("[DouYinCrawler.close] 外部浏览器会话，不关闭")
             return
+        if self.browser_context is None and self.browser is None:
+            utils.logger.info("[DouYinCrawler.close] 浏览器已关闭，跳过")
+            return
         try:
             if self.cdp_manager:
                 await self.cdp_manager.cleanup()
                 self.cdp_manager = None
             elif self.browser_context:
                 await self.browser_context.close()
-            utils.logger.info("[DouYinCrawler.close] Browser context closed ...")
+            if self.browser:
+                await self.browser.close()
+                self.browser = None
+            utils.logger.info("[DouYinCrawler.close] Browser closed ...")
         except Exception as e:
             utils.logger.warning(f"[DouYinCrawler.close] 关闭浏览器上下文时出错: {e}")
 
