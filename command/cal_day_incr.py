@@ -11,11 +11,11 @@ from typing import Tuple
 
 import pandas as pd
 from dotenv import load_dotenv
+load_dotenv()
 from sqlalchemy import text
 
 from database.db_session import get_session
 
-load_dotenv()
 
 parser = argparse.ArgumentParser(description="计算抖音增量数据")
 parser.add_argument(
@@ -85,7 +85,8 @@ def fetch_douyin_data(target_date: str, days: int = 0) -> pd.DataFrame:
     SELECT 
         aweme_id, sec_uid, nickname, aweme_url, create_time, 
         digg_count, collect_count, share_count, comment_count,
-        elastic_title, product_id, product_title, update_ts
+        elastic_title, product_id, product_title, update_ts, 
+        first_cname, second_cname, third_cname
     FROM douyin_aweme_summary 
     WHERE elastic_title IS NOT NULL
       AND update_ts >= {start_us}
@@ -206,7 +207,6 @@ def process_douyin_data(
     for aweme_url, group in df.groupby("aweme_url"):
         if len(group) == 0:
             continue
-
         latest = group.iloc[-1].to_dict()
         daily_increments = calculate_daily_increment(group, target_data_date, days)
 
@@ -227,6 +227,9 @@ def process_douyin_data(
                 "elastic_title": latest["elastic_title"],
                 "product_id": latest.get("product_id"),
                 "product_title": latest["product_title"],
+                "first_cname": latest.get("first_cname", ""),
+                "second_cname": latest.get("second_cname", ""),
+                "third_cname": latest.get("third_cname", ""),
                 "data_date": inc_row["data_date"],
                 "first_update_ts": inc_row["first_update_ts"],
                 "last_update_ts": inc_row["last_update_ts"],

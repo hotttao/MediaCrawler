@@ -174,6 +174,9 @@ class DouyinAwemeSummary(Base):
     price = Column(Integer, nullable=False, default=0, comment="商品价格（单位：分）")
     sales = Column(Integer, nullable=False, default=0, comment="销量")
     elastic_title = Column(Text, nullable=True, comment="商品弹性标题")
+    first_cname = Column(String(255), nullable=True, default="", comment="商品一级分类")
+    second_cname = Column(String(255), nullable=True, default="", comment="商品二级分类")
+    third_cname = Column(String(255), nullable=True, default="", comment="商品三级分类")
 
     # --- 定义联合主键 ---
     __table_args__ = (
@@ -535,6 +538,9 @@ class DouyinAwemeDay(Base):
     elastic_title = Column(Text, nullable=True, comment="视频标题（用于聚合）")
     product_id = Column(String(255), nullable=True, comment="商品ID")
     product_title = Column(Text, nullable=True, comment="商品标题")
+    first_cname = Column(String(255), nullable=True, default="", comment="商品一级分类")
+    second_cname = Column(String(255), nullable=True, default="", comment="商品二级分类")
+    third_cname = Column(String(255), nullable=True, default="", comment="商品三级分类")
     digg_count = Column(Integer, nullable=False, default=0, comment="日增点赞")
     collect_count = Column(Integer, nullable=False, default=0, comment="日增收藏")
     share_count = Column(Integer, nullable=False, default=0, comment="日增转发")

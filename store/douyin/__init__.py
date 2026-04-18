@@ -177,6 +177,7 @@ async def update_douyin_aweme(aweme_item: Dict):
 
 async def update_douyin_aweme_summary(aweme_item: Dict):
     result = {}
+    # utils.logger.info(json.dumps(aweme_item, ensure_ascii=False))
     author = aweme_item.get('author', {})
     result['sec_uid'] = author.get('sec_uid', '')
     result['nickname'] = author.get('nickname', '')
@@ -216,15 +217,20 @@ async def update_douyin_aweme_summary(aweme_item: Dict):
     
     if extra_str:
         try:
+            # utils.logger.info(extra_str)
             extra_list = json.loads(extra_str)
             if extra_list and isinstance(extra_list, list):
                 first_product = extra_list[0]
                 product['promotion_id'] = first_product.get("promotion_id", "")
                 product['product_id'] = first_product.get("product_id", "")
-                product['product_title'] = first_product.get("title", "")  # 避免与视频 title 冲突
+                product['product_title'] = first_product.get("title", "")
                 product['price'] = first_product.get("price", 0)
                 product['sales'] = first_product.get("sales", 0)
                 product['elastic_title'] = first_product.get("elastic_title", "")
+                category = first_product.get("category", {})
+                product['first_cname'] = category.get("FirstCName", "")
+                product['second_cname'] = category.get("SecondCName", "")
+                product['third_cname'] = category.get("ThirdCName", "")
         except json.JSONDecodeError:
             # 如果解析失败，product 保持为空字典
             pass
@@ -232,6 +238,7 @@ async def update_douyin_aweme_summary(aweme_item: Dict):
     # 将 product 字典中的所有键值对更新到主 result 字典中
     # 这样保证了最终结构仍然是扁平化的
     result.update(product)
+    
 
     utils.logger.info(f"[store.douyin.update_douyin_aweme] douyin aweme id:{aweme_id}, title:{title}")
     await DouyinStoreFactory.create_store().store_content_summary(content_summary_item=result)

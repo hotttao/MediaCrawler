@@ -28,6 +28,7 @@ async def push_hot_videos(
     start_date: str,
     filter_field: str,
     min_value: int,
+    first_cnames: List[str] = None,
 ) -> List[DouyinAwemeDay]:
     """
     从数据库查询热点视频并发送通知
@@ -37,13 +38,17 @@ async def push_hot_videos(
         start_date: 视频发布起始时间，格式 YYYY-MM-DD
         filter_field: X轴字段，用于最小值过滤
         min_value: 最小值过滤
+        first_cnames: 商品一级分类过滤列表，默认["水饮冲调", "酒类"]
 
     Returns:
         热点视频列表
     """
+    if first_cnames is None:
+        first_cnames = ["水饮冲调", "酒类"]
+
     utils.logger.info(
         f"[HotVideos] 查询热点视频: calc_date={calc_date}, start_date={start_date}, "
-        f"filter_field={filter_field}, min_value={min_value}"
+        f"filter_field={filter_field}, min_value={min_value}, first_cnames={first_cnames}"
     )
 
     async with get_session() as session:
@@ -53,6 +58,7 @@ async def push_hot_videos(
                 DouyinAwemeDay.create_time
                 >= int(datetime.strptime(start_date, "%Y-%m-%d").timestamp()),
                 getattr(DouyinAwemeDay, filter_field) >= min_value,
+                DouyinAwemeDay.first_cname.in_(first_cnames),
             )
         )
         result = await session.execute(stmt)
@@ -104,7 +110,7 @@ async def send_hot_videos_notification(
         f"━━━━━━━━━━━━━━━━━━━━\n"
     )
 
-    body = "\n".join(format_video_message(v) for v in videos[:20])
+    body = "\n".join(format_video_message(v) for v in videos)
 
     footer = f"\n━━━━━━━━━━━━━━━━━━━━\n数据来源: 抖音日增数据"
 
@@ -140,7 +146,15 @@ async def main():
         "--min_value",
         type=int,
         default=20,
-        help="最小值过滤，默认为 100",
+        help="最小值过滤，默认为 20",
+    )
+    parser.add_argument(
+        "-c",
+        "--first_cnames",
+        type=str,
+        nargs="+",
+        default=["水饮冲调", "酒类"],
+        help="商品一级分类过滤列表，默认为 水饮冲调 酒类",
     )
     args = parser.parse_args()
 
@@ -161,7 +175,7 @@ async def main():
 
     try:
         hot_videos = await push_hot_videos(
-            calc_date, start_date, args.filter_field, args.min_value
+            calc_date, start_date, args.filter_field, args.min_value, args.first_cnames
         )
         await send_hot_videos_notification(
             notifier, hot_videos, calc_date, args.filter_field, args.min_value
