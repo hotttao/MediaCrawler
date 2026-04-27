@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import config
 from sqlalchemy import select, update
 from database.db_session import get_session
 from database.models import DyCrawlerCreator, DyCreator
