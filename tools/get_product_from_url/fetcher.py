@@ -36,7 +36,7 @@ async def get_product_from_url(url: str) -> dict:
 
     async with async_playwright() as playwright:
         # 使用项目已有的登录状态 - 用户目录
-        user_data_dir = os.path.join(os.getcwd(), "browser_data", "dy_user_data_dir", "橙子Mama")
+        user_data_dir = os.path.join(os.getcwd(), "browser_data", "dy_user_data_dir", "漫游者")
         os.makedirs(user_data_dir, exist_ok=True)
 
         # 启动带用户数据目录的持久化浏览器上下文
