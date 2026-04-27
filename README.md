@@ -35,6 +35,9 @@ uv run -m command.run_full_crawl -t 2025-01-15 -d 7
 
 # 5. 从抖音分享链接提取用户ID
 python -m command.extract_douyin_user_id "https://v.douyin.com/mlIAdeKJFxE/"
+
+# 6. 从视频链接提取商品信息
+python -m tools.get_product_from_url.main "https://www.douyin.com/video/7558626596425518371"
 ```
 
 # 项目结构

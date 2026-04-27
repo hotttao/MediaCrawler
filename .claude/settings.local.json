@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"\\\\.\\(env|md\\)$|setup|install|requirement\")"
+      "Bash(grep -E \"\\\\.\\(env|md\\)$|setup|install|requirement\")",
+      "Bash(python -c \"from tools.get_product_from_url.extractor import extract_aweme_id; print\\(extract_aweme_id\\(''https://www.douyin.com/video/7558626596425518371''\\)\\)\")",
+      "Bash(python -c \"from tools.get_product_from_url.fetcher import DouYinAPIClient; print\\(''OK''\\)\")",
+      "Bash(python -m tools.get_product_from_url.main --help)",
+      "Bash(python -c \"from tools.get_product_from_url.fetcher import extract_aweme_id, extract_product_info; print\\(''导入成功''\\)\")",
+      "Bash(python -m tools.get_product_from_url.main \"https://www.douyin.com/video/7558626596425518371\")",
+      "Bash(python -c \":*)"
     ]
   }
 }
