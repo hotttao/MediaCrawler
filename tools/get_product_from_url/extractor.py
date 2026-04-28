@@ -58,6 +58,7 @@ def extract_product_info(aweme_item: Dict) -> Dict:
             extra_list = json.loads(extra_str)
             if extra_list and isinstance(extra_list, list):
                 p = extra_list[0]
+                # print(json.dumps(p, ensure_ascii=False, indent=2))
                 # 提取指定字段
                 product['promotion_id'] = p.get('promotion_id', '')
                 product['product_id'] = p.get('product_id', '')
