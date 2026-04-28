@@ -146,11 +146,35 @@ class AccountBrowserMiddleware:
                     f"[AccountBrowser] 关闭账户 {self.current_session.nickname} 的浏览器"
                 )
                 if self.current_session.context_page:
-                    await self.current_session.context_page.close()
+                    try:
+                        await asyncio.wait_for(
+                            self.current_session.context_page.close(),
+                            timeout=5
+                        )
+                    except asyncio.TimeoutError:
+                        utils.logger.warning("[AccountBrowser] context_page.close() 超时，跳过")
+                    except Exception as e:
+                        utils.logger.warning(f"[AccountBrowser] context_page.close() 出错: {e}")
                 if self.current_session.browser_context:
-                    await self.current_session.browser_context.close()
+                    try:
+                        await asyncio.wait_for(
+                            self.current_session.browser_context.close(),
+                            timeout=10
+                        )
+                    except asyncio.TimeoutError:
+                        utils.logger.warning("[AccountBrowser] browser_context.close() 超时，跳过")
+                    except Exception as e:
+                        utils.logger.warning(f"[AccountBrowser] browser_context.close() 出错: {e}")
                 if self.current_session.browser:
-                    await self.current_session.browser.close()
+                    try:
+                        await asyncio.wait_for(
+                            self.current_session.browser.close(),
+                            timeout=5
+                        )
+                    except asyncio.TimeoutError:
+                        utils.logger.warning("[AccountBrowser] browser.close() 超时，跳过")
+                    except Exception as e:
+                        utils.logger.warning(f"[AccountBrowser] browser.close() 出错: {e}")
                 await asyncio.sleep(1)
             except Exception as e:
                 utils.logger.warning(f"[AccountBrowser] 关闭浏览器时出错: {e}")
