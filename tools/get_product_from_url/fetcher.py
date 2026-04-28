@@ -35,6 +35,7 @@ async def get_product_from_url(url: str) -> dict:
         return {"error": f"无法从链接中提取视频 ID: {url}"}
 
     browser_context = None
+    context_page = None
     try:
         async with async_playwright() as playwright:
             # 使用项目已有的登录状态 - 用户目录
@@ -78,6 +79,11 @@ async def get_product_from_url(url: str) -> dict:
             # 检查登录状态
             if not await dy_client.pong(browser_context=browser_context):
                 print("需要登录，请使用完整爬虫流程先登录...", file=sys.stderr)
+                # 关闭浏览器后再返回
+                if context_page:
+                    await context_page.close()
+                await browser_context.close()
+                await asyncio.sleep(1)
                 return {"error": "未登录，请先通过主程序登录"}
 
             # 获取视频详情
@@ -85,12 +91,22 @@ async def get_product_from_url(url: str) -> dict:
             aweme_detail = await dy_client.get_video_by_id(aweme_id)
 
             if not aweme_detail:
+                # 关闭浏览器后再返回
+                if context_page:
+                    await context_page.close()
+                await browser_context.close()
+                await asyncio.sleep(1)
                 return {"error": f"无法获取视频详情，视频 ID: {aweme_id}"}
 
             # 提取商品信息
             product = extract_product_info(aweme_detail)
 
             if not product:
+                # 关闭浏览器后再返回
+                if context_page:
+                    await context_page.close()
+                await browser_context.close()
+                await asyncio.sleep(1)
                 return {
                     "aweme_id": aweme_id,
                     "has_product": False,
@@ -110,10 +126,27 @@ async def get_product_from_url(url: str) -> dict:
                 product["db_inserted"] = False
                 product["db_error"] = str(e)
 
-            return product
-    finally:
-        if browser_context:
+            # 关闭浏览器
+            if context_page:
+                await context_page.close()
             await browser_context.close()
+            await asyncio.sleep(1)
+
+            return product
+    except Exception as e:
+        # 异常时确保清理
+        if context_page:
+            try:
+                await context_page.close()
+            except Exception:
+                pass
+        if browser_context:
+            try:
+                await browser_context.close()
+            except Exception:
+                pass
+        await asyncio.sleep(1)
+        raise
 
 
 if __name__ == "__main__":
