@@ -166,7 +166,7 @@ def download_product_image(product_id: str, url: str) -> str:
     import os
 
     # 创建保存目录
-    save_dir = r"D:\Code\media\media_ai\public\uploads\teams\18982144-3d42-4a51-98d8-4d6959332d66\products"
+    save_dir = r"D:\nginx\media_images\uploads\teams\18982144-3d42-4a51-98d8-4d6959332d66\products"
     os.makedirs(save_dir, exist_ok=True)
 
     # 本地文件路径
