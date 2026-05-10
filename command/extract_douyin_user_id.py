@@ -97,8 +97,9 @@ def extract_user_ids(urls: list) -> dict:
         if product_match and 'product_id' not in results:
             results['product_id'] = product_match.group(1)
 
-        # 6. 记录最终URL（重定向链最后一个）
-        results['final_url'] = url
+        # 6. 记录最终URL（重定向链最后一个，过滤冗余参数）
+        clean_url = re.sub(r'\?previous_page=.*$', '', url)
+        results['final_url'] = clean_url
 
     return results
 
