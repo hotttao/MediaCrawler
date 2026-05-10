@@ -53,35 +53,50 @@ def get_redirect_chain(short_url: str) -> list:
     return urls
 
 def extract_user_ids(urls: list) -> dict:
-    """从重定向URL中提取用户ID"""
+    """从重定向URL中提取用户ID和商品ID"""
     results = {}
-    
+
     for url in urls:
         parsed = urlparse(url)
         params = parse_qs(parsed.query)
-        
+
         # 1. 直接参数
         for key in ['uid', 'user_id', 'author_id', 'sec_uid', 'secuid']:
             if key in params and key not in results:
                 results[key] = params[key][0]
-        
-        # 2. 解析JSON参数
+
+        # 2. 商品ID参数
+        for key in ['product_id', 'item_id', 'goods_id']:
+            if key in params and 'product_id' not in results:
+                results['product_id'] = params[key][0]
+
+        # 3. 解析JSON参数
         for key in ['ecom_share_track_params', 'activity_info', 'share_track_info']:
             if key in params:
                 try:
                     json_data = json.loads(params[key][0])
-                    
+
                     for k in ['secuid', 'sec_author_id', 'social_author_id', 'social_share_user_id']:
                         if k in json_data and k not in results:
                             results[k] = json_data[k]
+
+                    # 商品ID从JSON中提取
+                    for k in ['product_id', 'item_id', 'goods_id']:
+                        if k in json_data and 'product_id' not in results:
+                            results['product_id'] = json_data[k]
                 except json.JSONDecodeError:
                     pass
-        
-        # 3. URL路径
+
+        # 4. URL路径
         path_match = re.search(r'douyin\.com/user/([^/?\s]+)', url)
         if path_match and 'user_page' not in results:
             results['user_page'] = path_match.group(1)
-    
+
+        # 5. 从商品详情路径提取product_id
+        product_match = re.search(r'douyin\.com/jupiter/detail/(\d+)', url)
+        if product_match and 'product_id' not in results:
+            results['product_id'] = product_match.group(1)
+
     return results
 
 def main():
@@ -114,10 +129,11 @@ def main():
     main_id = user_ids.get('sec_author_id') or user_ids.get('secuid')
     
     print("=" * 50)
-    print("提取的用户ID:")
+    print("提取结果:")
     print("=" * 50)
-    print(f"sec_author_id (原创作者): {user_ids.get('sec_author_id', 'N/A')}")
-    print(f"secuid (转发者): {user_ids.get('secuid', 'N/A')}")
+    print(f"用户ID (sec_author_id): {user_ids.get('sec_author_id', 'N/A')}")
+    print(f"用户ID (secuid): {user_ids.get('secuid', 'N/A')}")
+    print(f"商品ID (product_id): {user_ids.get('product_id', 'N/A')}")
     print(f"social_author_id: {user_ids.get('social_author_id', 'N/A')}")
     print(f"user_page: {user_ids.get('user_page', 'N/A')}")
     
