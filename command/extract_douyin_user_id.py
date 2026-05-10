@@ -14,6 +14,15 @@ import json
 import sys
 from urllib.parse import urlparse, parse_qs
 
+def extract_url(text: str) -> str:
+    """从文本中提取第一个抖音URL"""
+    # 匹配 v.douyin.com 开头的URL
+    pattern = r'https://v\.douyin\.com/[^\s]+'
+    match = re.search(pattern, text)
+    if match:
+        return match.group(0)
+    return text.strip()
+
 def get_redirect_chain(short_url: str) -> list:
     """获取短链接的重定向链"""
     session = requests.Session()
@@ -78,18 +87,21 @@ def extract_user_ids(urls: list) -> dict:
 def main():
     # 获取分享链接
     if len(sys.argv) > 1:
-        share_url = sys.argv[1].strip()
+        input_text = sys.argv[1].strip()
     else:
-        share_url = input("请输入抖音分享链接: ").strip()
-    
-    if not share_url:
+        input_text = input("请输入抖音分享链接或包含链接的文本: ").strip()
+
+    if not input_text:
         print("错误: 请提供分享链接")
         sys.exit(1)
-    
+
+    # 从文本中提取URL
+    share_url = extract_url(input_text)
+
     # 补全URL
     if not share_url.startswith('http'):
         share_url = 'https://' + share_url
-    
+
     print(f"抖音分享链接: {share_url}\n")
     
     # 获取重定向链
