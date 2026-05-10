@@ -97,6 +97,9 @@ def extract_user_ids(urls: list) -> dict:
         if product_match and 'product_id' not in results:
             results['product_id'] = product_match.group(1)
 
+        # 6. 记录最终URL（重定向链最后一个）
+        results['final_url'] = url
+
     return results
 
 def main():
@@ -133,7 +136,7 @@ def main():
     print("=" * 50)
     print(f"用户ID (sec_author_id): {user_ids.get('sec_author_id', 'N/A')}")
     print(f"用户ID (secuid): {user_ids.get('secuid', 'N/A')}")
-    print(f"商品ID (product_id): {user_ids.get('product_id', 'N/A')}")
+    print(f"商品URL (product_url): {user_ids.get('final_url', 'N/A')}")
     print(f"social_author_id: {user_ids.get('social_author_id', 'N/A')}")
     print(f"user_page: {user_ids.get('user_page', 'N/A')}")
     
