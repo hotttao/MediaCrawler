@@ -73,12 +73,12 @@ def insert_product(record: dict) -> bool:
         INSERT INTO products (
             id, user_id, team_id, name, targetAudience, productDetails, display_actions,
             promotion_id, elastic_title, elastic_images_uri,
-            FirstCName, SecondCName, ThirdCName, FourthCName,
+            first_c_name, second_c_name, third_c_name, fourth_c_name,
             price, aweme_id, updated_at
         ) VALUES (
             :id, :user_id, :team_id, :name, :targetAudience, :productDetails, :display_actions,
             :promotion_id, :elastic_title, :elastic_images_uri,
-            :FirstCName, :SecondCName, :ThirdCName, :FourthCName,
+            :first_c_name, :second_c_name, :third_c_name, :fourth_c_name,
             :price, :aweme_id, NOW(3)
         )
         ON DUPLICATE KEY UPDATE id=id
@@ -218,8 +218,8 @@ def build_product_record(product_data: dict, aweme_id: str = "") -> dict:
 
     return {
         'id': product_data.get('product_id', ''),
-        'user_id': 'd359ec83-a39c-4408-aac6-c1c818d08ab8',
-        'team_id': '18982144-3d42-4a51-98d8-4d6959332d66',
+        'user_id': '81b01a70-d5b7-4e68-a0b4-559f68e87cb3',
+        'team_id': 'cf88f650-a530-4356-81db-391b62522778',
         'name': product_data.get('title', ''),
         'targetAudience': target_audience,
         'productDetails': '',
@@ -227,10 +227,10 @@ def build_product_record(product_data: dict, aweme_id: str = "") -> dict:
         'promotion_id': product_data.get('promotion_id', ''),
         'elastic_title': product_data.get('elastic_title', ''),
         'elastic_images_uri': product_data.get('elastic_images_uri', ''),
-        'FirstCName': product_data.get('FirstCName', ''),
-        'SecondCName': product_data.get('SecondCName', ''),
-        'ThirdCName': product_data.get('ThirdCName', ''),
-        'FourthCName': product_data.get('FourthCName', ''),
+        'first_c_name': product_data.get('FirstCName', ''),
+        'second_c_name': product_data.get('SecondCName', ''),
+        'third_c_name': product_data.get('ThirdCName', ''),
+        'fourth_c_name': product_data.get('FourthCName', ''),
         'price': product_data.get('price', 0),
         'aweme_id': aweme_id or product_data.get('aweme_id', ''),
     }
